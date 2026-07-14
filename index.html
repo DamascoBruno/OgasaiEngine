@@ -1,0 +1,4208 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OGASAI-Engine · Copiloto Industrial Net Zero</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+/* ===================================================
+   OGASAI-Engine v3 · Tema Brasil Industrial
+   Alto contraste: Verde Bandeira / Azul Marinho / Amarelo Ouro
+=================================================== */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* ── TEMA BRASIL INDUSTRIAL ── */
+
+  /* Fundo geral: Azul Marinho profundo */
+  --bg-root:        #00274C;
+  --bg-panel:       #FFFFFF;
+  --bg-card:        #F5F7FA;
+  --bg-raised:      #E8EAED;
+  --bg-hover:       #EEF1F5;
+
+  /* Sidebar: Verde Bandeira fechado */
+  --bg-sidebar:     #004724;
+  --bg-header:      #FFFFFF;
+
+  /* Bordas */
+  --border:         rgba(0,0,0,0.10);
+  --border-mid:     rgba(0,0,0,0.16);
+  --border-bright:  rgba(0,0,0,0.28);
+
+  /* Texto principal (sobre fundos claros: cards, canvas) */
+  --text-primary:   #1a1d22;
+  --text-secondary: #3a4050;
+  --text-muted:     #6a7080;
+  --text-dim:       #9aa0ac;
+
+  /* Texto sobre sidebar verde escuro */
+  --sidebar-text:        #FFFFFF;
+  --sidebar-text-muted:  rgba(255,255,255,0.65);
+  --sidebar-text-dim:    rgba(255,255,255,0.40);
+  --sidebar-border:      rgba(255,255,255,0.12);
+  --sidebar-hover:       rgba(255,255,255,0.08);
+  --sidebar-active:      rgba(255,204,0,0.15);
+
+  /* ISA 101 — Estados anômalos */
+  --good:           #2e8b50;
+  --warn:           #c47d10;
+  --crit:           #cc3333;
+  --co2-alert:      #c85a00;
+  --vib-alert:      #6b4dc0;
+
+  /* Accent: Amarelo Ouro Brasil */
+  --accent:         #FFCC00;
+  --accent-text:    #7A5E00;
+  --accent-dim:     rgba(255,204,0,0.10);
+  --accent-border:  rgba(255,204,0,0.50);
+
+  /* Accent azul para gráficos (mantido para legibilidade técnica) */
+  --chart-accent:   #2a6fa8;
+
+  --font-body:      'IBM Plex Sans', sans-serif;
+  --font-mono:      'IBM Plex Mono', monospace;
+  --radius:         5px;
+  --radius-lg:      8px;
+  --sidebar-w:      280px;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg-root);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 13px;
+  overflow: hidden;
+}
+
+/* Faixa de identidade: verde-amarelo-azul Brasil */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #004724 0%, #FFCC00 50%, #00274C 100%);
+  z-index: 9999;
+}
+
+/* ── LAYOUT ─────────────────────────────────── */
+
+#app {
+  display: grid;
+  grid-template-columns: var(--sidebar-w) 1fr;
+  height: 100vh;
+  overflow: hidden;
+  padding-top: 3px;
+}
+
+/* ── SIDEBAR ────────────────────────────────── */
+
+#sidebar {
+  background: var(--bg-sidebar);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-right: 1px solid rgba(255,204,0,0.20);
+}
+
+/* ── LOGO ───────────────────────────────────── */
+
+#sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 16px 16px 14px;
+  border-bottom: 1px solid var(--sidebar-border);
+}
+
+#logo-mark {
+  width: 34px; height: 34px;
+  background: rgba(255,204,0,0.15);
+  border: 1px solid rgba(255,204,0,0.35);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+#logo-title {
+  font-size: 15px; font-weight: 700;
+  letter-spacing: 2px;
+  color: #FFFFFF;
+  line-height: 1;
+}
+
+#logo-sub {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  color: rgba(255,204,0,0.80);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  display: block;
+  margin-top: 4px;
+}
+
+/* ── STATUS BAR ─────────────────────────────── */
+
+#status-bar {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 16px;
+  background: rgba(0,0,0,0.20);
+  border-bottom: 1px solid var(--sidebar-border);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--sidebar-text-muted);
+}
+
+.status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #FFCC00;
+  box-shadow: 0 0 6px rgba(255,204,0,0.5);
+  animation: pulse 2.8s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+#status-time { margin-left: auto; color: var(--sidebar-text-dim); font-size: 9px; }
+
+/* ── SIDEBAR NAV GROUPS ─────────────────────── */
+
+#sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+#sidebar-nav::-webkit-scrollbar { width: 3px; }
+#sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.20); border-radius: 2px; }
+
+.nav-group { margin-bottom: 4px; }
+
+.nav-group-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px 5px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.nav-group-icon {
+  width: 20px; height: 20px;
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  background: rgba(255,204,0,0.12);
+  border: 1px solid rgba(255,204,0,0.25);
+}
+
+.nav-group-label {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.55);
+  font-weight: 500;
+}
+
+.nav-group-arrow {
+  margin-left: auto;
+  color: rgba(255,255,255,0.30);
+  font-size: 9px;
+  transition: transform 0.2s;
+}
+
+.nav-group.open .nav-group-arrow { transform: rotate(90deg); }
+
+.nav-items { display: none; padding-bottom: 4px; }
+.nav-group.open .nav-items { display: block; }
+
+.nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: calc(100% - 24px);
+  margin: 1px 12px;
+  padding: 7px 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  color: rgba(255,255,255,0.80);
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: all 0.13s ease;
+  text-align: left;
+}
+
+.nav-btn:hover {
+  background: var(--sidebar-active);
+  border-color: rgba(255,204,0,0.30);
+  color: #FFCC00;
+}
+
+.nav-btn:active { transform: scale(0.98); }
+
+.nav-btn-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
+.nav-group-energy .nav-btn-dot   { background: #FFCC00; }
+.nav-group-sustain .nav-btn-dot  { background: #6ddb95; }
+.nav-group-manut .nav-btn-dot    { background: #c8a8ff; }
+
+/* ── CHAT AREA ──────────────────────────────── */
+
+#chat-area {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  height: 220px;
+  border-top: 1px solid var(--sidebar-border);
+}
+
+.chat-label {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--sidebar-text-dim);
+  padding: 8px 14px 5px;
+  border-bottom: 1px solid var(--sidebar-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#help-btn {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: rgba(255,204,0,0.15);
+  border: 1px solid rgba(255,204,0,0.35);
+  color: #FFCC00;
+  font-family: var(--font-body);
+  font-size: 9px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s;
+  line-height: 1;
+  letter-spacing: 0;
+}
+#help-btn:hover { background: rgba(255,204,0,0.30); border-color: rgba(255,204,0,0.70); }
+
+#help-panel {
+  display: none;
+  background: rgba(0,0,0,0.40);
+  border-bottom: 1px solid var(--sidebar-border);
+  padding: 8px 12px 10px;
+  animation: msgIn 0.18s ease;
+  overflow-y: auto;
+  max-height: 170px;
+}
+#help-panel::-webkit-scrollbar { width: 2px; }
+#help-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.20); }
+#help-panel.open { display: block; }
+
+.help-section-title {
+  font-family: var(--font-mono);
+  font-size: 7px;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: #FFCC00;
+  opacity: 0.7;
+  margin: 7px 0 4px;
+}
+.help-section-title:first-child { margin-top: 0; }
+
+.help-cmd {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-bottom: 4px;
+  cursor: pointer;
+  border-radius: 3px;
+  padding: 3px 5px;
+  transition: background 0.12s;
+}
+.help-cmd:hover { background: rgba(255,204,0,0.08); }
+
+.help-cmd-tag {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  color: #FFCC00;
+  background: rgba(255,204,0,0.10);
+  border: 1px solid rgba(255,204,0,0.25);
+  border-radius: 3px;
+  padding: 1px 5px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: 1.6;
+}
+
+.help-cmd-desc {
+  font-family: var(--font-body);
+  font-size: 9.5px;
+  color: rgba(255,255,255,0.50);
+  line-height: 1.5;
+}
+
+#messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  scroll-behavior: smooth;
+}
+
+#messages::-webkit-scrollbar { width: 2px; }
+#messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.20); }
+
+.msg {
+  padding: 7px 10px;
+  border-radius: var(--radius);
+  font-size: 11px;
+  line-height: 1.55;
+  animation: msgIn 0.2s ease;
+}
+
+@keyframes msgIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.msg-user {
+  background: rgba(255,204,0,0.10);
+  border: 1px solid rgba(255,204,0,0.25);
+  color: rgba(255,255,255,0.85);
+  align-self: flex-end;
+  max-width: 94%;
+}
+
+.msg-ai {
+  background: rgba(0,0,0,0.25);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-left: 2px solid #FFCC00;
+  color: rgba(255,255,255,0.80);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+.msg-ai .ai-label {
+  display: block;
+  font-size: 7px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #FFCC00;
+  margin-bottom: 4px;
+  opacity: 0.9;
+}
+
+.msg-typing span {
+  display: inline-block;
+  width: 4px; height: 4px;
+  background: #FFCC00;
+  border-radius: 50%;
+  margin-right: 3px;
+  animation: blink 1.4s infinite;
+}
+.msg-typing span:nth-child(2) { animation-delay: 0.2s; }
+.msg-typing span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes blink {
+  0%, 80%, 100% { opacity: 0.2; }
+  40% { opacity: 1; }
+}
+
+/* ── INPUT ROW ──────────────────────────────── */
+
+#input-row {
+  display: flex;
+  gap: 5px;
+  padding: 8px 10px;
+  border-top: 1px solid var(--sidebar-border);
+  background: rgba(0,0,0,0.20);
+}
+
+#user-input {
+  flex: 1;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: var(--radius);
+  color: #FFFFFF;
+  font-family: var(--font-body);
+  font-size: 11px;
+  padding: 7px 9px;
+  resize: none;
+  outline: none;
+  transition: border-color 0.15s;
+  line-height: 1.4;
+}
+
+#user-input:focus { border-color: rgba(255,204,0,0.50); }
+#user-input::placeholder { color: rgba(255,255,255,0.30); }
+
+#send-btn {
+  width: 32px; height: 32px;
+  background: #FFCC00;
+  border: none;
+  border-radius: var(--radius);
+  color: #003A1A;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  align-self: flex-end;
+  transition: all 0.13s;
+  opacity: 0.90;
+}
+#send-btn:hover { opacity: 1; background: #FFD633; }
+#send-btn:active { transform: scale(0.92); }
+
+/* ── SIDEBAR FOOTER ─────────────────────────── */
+
+#sidebar-footer {
+  padding: 7px 16px;
+  border-top: 1px solid var(--sidebar-border);
+  font-family: var(--font-mono);
+  font-size: 8px;
+  color: var(--sidebar-text-dim);
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ── MAIN ───────────────────────────────────── */
+
+#main {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  overflow: hidden;
+  background: var(--bg-root);
+}
+
+/* ── METRICS ROW ────────────────────────────── */
+
+#metrics-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0;
+  border-bottom: 2px solid rgba(255,204,0,0.30);
+  flex-shrink: 0;
+  position: relative;
+}
+
+/* CO2 Tree Visualizer */
+#eco-indicator {
+  position: absolute;
+  top: 8px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+#eco-label {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-align: right;
+  line-height: 1.5;
+}
+
+#eco-tree-svg { flex-shrink: 0; }
+
+/* Cards de métricas: fundo branco/cinza claro para contrastar com azul marinho */
+.metric-card {
+  background: #FFFFFF;
+  padding: 13px 15px 10px;
+  border-right: 1px solid rgba(0,39,76,0.12);
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+  transition: background 0.13s;
+}
+
+.metric-card:last-child { border-right: none; }
+.metric-card:hover { background: var(--bg-card); }
+
+/* Linha de destaque dourada no topo de cada card */
+.metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #FFCC00 0%, transparent 80%);
+  opacity: 0.6;
+}
+
+.metric-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 5px;
+}
+
+.metric-value {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.metric-value.state-warn  { color: var(--warn) !important; }
+.metric-value.state-crit  { color: var(--crit) !important; }
+.metric-value.state-good  { color: var(--good) !important; }
+.metric-value.state-co2   { color: var(--co2-alert) !important; }
+
+.metric-unit {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  color: var(--text-dim);
+  margin-top: 3px;
+}
+
+.metric-bar {
+  margin-top: 6px;
+  height: 2px;
+  background: var(--bg-raised);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.metric-fill {
+  height: 100%;
+  background: #FFCC00;
+  border-radius: 2px;
+  transition: width 0.8s ease;
+  width: 0%;
+}
+
+/* ── SPARKLINE TREND ────────────────────────── */
+
+.metric-trend {
+  margin-top: 6px;
+  height: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.sparkline-canvas {
+  width: 100%;
+  height: 24px;
+  display: block;
+}
+
+.trend-label {
+  position: absolute;
+  right: 0; top: 0;
+  font-family: var(--font-mono);
+  font-size: 7.5px;
+  color: var(--text-dim);
+  letter-spacing: 0.5px;
+}
+
+.trend-up   { color: var(--crit) !important; }
+.trend-down { color: var(--good) !important; }
+.trend-flat { color: var(--text-muted) !important; }
+
+.status-badge { font-size: 14px !important; font-weight: 600; letter-spacing: 1px; }
+
+/* ── CANVAS SECTION ─────────────────────────── */
+
+#canvas-section {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #FFFFFF;
+}
+
+#canvas-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 16px;
+  border-bottom: 1px solid rgba(0,39,76,0.12);
+  background: #FFFFFF;
+  flex-shrink: 0;
+  gap: 12px;
+}
+
+#chart-title-wrap { display: flex; align-items: center; gap: 8px; }
+
+#chart-status-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--text-dim);
+  flex-shrink: 0;
+}
+
+#chart-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.8px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+#canvas-controls { display: flex; gap: 4px; }
+
+.ctrl-btn {
+  padding: 4px 13px;
+  background: transparent;
+  border: 1px solid rgba(0,39,76,0.20);
+  border-radius: 20px;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 10.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.13s;
+}
+
+.ctrl-btn:hover {
+  border-color: rgba(255,204,0,0.60);
+  color: var(--text-primary);
+  background: rgba(255,204,0,0.08);
+}
+
+.ctrl-btn.active {
+  background: rgba(255,204,0,0.12);
+  border-color: rgba(255,204,0,0.60);
+  color: #7A5E00;
+  font-weight: 600;
+}
+
+#canvas-wrap {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background: #FFFFFF;
+}
+
+#main-canvas { width: 100%; height: 100%; display: block; background: #FFFFFF; }
+
+#canvas-idle {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 10px;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  pointer-events: none;
+  transition: opacity 0.4s;
+  background: #FFFFFF;
+}
+
+#canvas-idle svg { animation: float 4s ease-in-out infinite; opacity: 0.15; }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-7px); }
+}
+
+#canvas-idle.hidden { opacity: 0; }
+
+/* ── BOTTOM ROW ─────────────────────────────── */
+
+#bottom-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: 1px solid rgba(255,204,0,0.25);
+  min-height: 0;
+  max-height: 195px;
+}
+
+#results-panel, #powerbi-panel {
+  background: #FFFFFF;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+#results-panel { border-right: 1px solid rgba(0,39,76,0.10); }
+
+.panel-label {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  padding: 8px 14px 6px;
+  border-bottom: 1px solid rgba(0,39,76,0.10);
+  display: flex; align-items: center; gap: 8px;
+  background: var(--bg-card);
+  flex-shrink: 0;
+}
+
+.panel-label::after {
+  content: '';
+  flex: 1; height: 1px;
+  background: rgba(0,39,76,0.08);
+}
+
+#results-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 14px 10px;
+  font-size: 11.5px;
+  line-height: 1.65;
+  color: var(--text-secondary);
+}
+
+#results-content::-webkit-scrollbar { width: 2px; }
+#results-content::-webkit-scrollbar-thumb { background: var(--text-dim); }
+
+#results-placeholder { color: var(--text-dim); font-size: 10.5px; font-style: italic; }
+
+.result-block {
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(0,39,76,0.08);
+  animation: msgIn 0.22s ease;
+}
+
+.result-block:last-child { border-bottom: none; }
+
+.result-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 7.5px;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+  background: rgba(0,39,76,0.05);
+  color: var(--text-muted);
+  border: 1px solid rgba(0,39,76,0.10);
+  padding: 2px 7px;
+  border-radius: 3px;
+  margin-bottom: 3px;
+}
+
+.result-value { color: var(--text-primary); font-weight: 600; }
+.result-alert { color: var(--warn); }
+.result-crit  { color: var(--crit); }
+.result-good  { color: var(--good); }
+
+/* ── POWER BI ───────────────────────────────── */
+
+#powerbi-wrap {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  margin: 4px 12px 8px;
+  border: 1px solid rgba(0,39,76,0.12);
+  border-radius: var(--radius);
+}
+
+#powerbi-iframe { width: 100%; height: 100%; border: none; display: block; }
+
+#powerbi-overlay {
+  position: absolute; inset: 0;
+  background: #FFFFFF;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 4px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 1px;
+  transition: opacity 0.4s;
+}
+
+#powerbi-overlay p { color: var(--text-secondary); font-size: 11px; font-family: var(--font-body); font-weight: 600; }
+#powerbi-overlay span { font-size: 9px; opacity: 0.5; }
+
+#pbi-input-row { display: flex; gap: 5px; margin-top: 7px; width: 86%; }
+
+#pbi-url {
+  flex: 1;
+  padding: 4px 8px;
+  background: #FFFFFF;
+  border: 1px solid rgba(0,39,76,0.18);
+  border-radius: var(--radius);
+  color: var(--text-primary);
+  font-size: 10px;
+  outline: none;
+  font-family: var(--font-mono);
+}
+
+#pbi-url:focus { border-color: rgba(255,204,0,0.60); }
+
+#pbi-input-row button {
+  padding: 4px 10px;
+  background: #FFCC00;
+  border: none;
+  border-radius: var(--radius);
+  color: #003A1A;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.13s;
+  opacity: 0.90;
+}
+#pbi-input-row button:hover { opacity: 1; }
+
+/* ── ALERT TOAST ────────────────────────────── */
+
+#alert-toast {
+  position: fixed;
+  top: 18px; right: 18px;
+  background: #FFFFFF;
+  border: 1px solid rgba(0,39,76,0.12);
+  border-left: 3px solid #FFCC00;
+  border-radius: var(--radius);
+  padding: 9px 14px;
+  font-size: 11px;
+  color: var(--text-primary);
+  opacity: 0;
+  transform: translateX(14px);
+  transition: all 0.22s ease;
+  pointer-events: none;
+  z-index: 100;
+  max-width: 270px;
+  box-shadow: 0 4px 20px rgba(0,39,76,0.15);
+  font-family: var(--font-body);
+}
+
+#alert-toast.show { opacity: 1; transform: translateX(0); }
+
+/* ── RESPONSIVE ─────────────────────────────── */
+
+@media (max-width: 1100px) {
+  :root { --sidebar-w: 250px; }
+  #metrics-row { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 800px) {
+  #app { grid-template-columns: 1fr; }
+  #sidebar { display: none; }
+  #metrics-row { grid-template-columns: repeat(2, 1fr); }
+  #bottom-row { grid-template-columns: 1fr; max-height: none; }
+}
+
+::-webkit-scrollbar { width: 3px; height: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--text-dim); border-radius: 2px; }
+
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.metric-value.updating { animation: countUp 0.3s ease; }
+
+/* ── DIAGNOSTIC OS BUTTON ───────────────────── */
+.btn-os-draft {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 6px 13px;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius);
+  color: #003A1A;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: opacity 0.15s, transform 0.12s;
+  animation: msgIn 0.3s ease;
+}
+.btn-os-draft:hover { opacity: 0.88; transform: translateY(-1px); }
+
+.msg-processing {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--warn);
+  padding: 5px 0;
+  letter-spacing: 0.6px;
+  animation: msgIn 0.2s ease;
+}
+.processing-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--warn);
+  animation: pulse-warn 0.9s ease-in-out infinite;
+}
+@keyframes pulse-warn {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.35; transform: scale(0.7); }
+}
+
+/* ── ESG SIMULATOR ───────────────────────────── */
+.simulator-container {
+  margin: 0 12px 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px 12px;
+  animation: msgIn 0.25s ease;
+}
+.simulator-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 7px;
+}
+.simulator-title span {
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  color: var(--accent-text);
+  border-radius: 3px;
+  padding: 1px 6px;
+  font-size: 8px;
+}
+.sim-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.sim-field label {
+  display: block;
+  font-size: 9.5px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.5px;
+}
+.sim-field input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
+  cursor: pointer;
+  height: 3px;
+}
+.sim-field .sim-val {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-top: 2px;
+}
+.sim-field input[type="number"] {
+  width: 100%;
+  padding: 5px 8px;
+  background: #fff;
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  outline: none;
+}
+.sim-field input[type="number"]:focus { border-color: var(--accent-border); }
+.sim-kpis {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.sim-kpi {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 10px;
+  position: relative;
+  overflow: hidden;
+}
+.sim-kpi::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 3px; height: 100%;
+  background: var(--crit);
+}
+.sim-kpi.kpi-loss::before { background: var(--warn); }
+.sim-kpi-label {
+  font-size: 9px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  letter-spacing: 0.5px;
+  display: block;
+  margin-bottom: 4px;
+}
+.sim-kpi-val {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--crit);
+  display: block;
+}
+.sim-kpi.kpi-loss .sim-kpi-val { color: var(--warn); }
+
+/* ── OS MODAL ─────────────────────────────────── */
+#os-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,39,76,0.65);
+  backdrop-filter: blur(3px);
+  z-index: 500;
+  align-items: center;
+  justify-content: center;
+}
+#os-modal.visible { display: flex; }
+
+#os-box {
+  background: #F8F6F0;
+  border: 2px solid #333;
+  border-radius: 4px;
+  width: 520px;
+  max-width: 95vw;
+  max-height: 88vh;
+  overflow-y: auto;
+  font-family: var(--font-mono);
+  color: #1a1a1a;
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.25), 0 20px 60px rgba(0,39,76,0.4);
+  position: relative;
+}
+
+.os-header {
+  background: #1a1a1a;
+  color: #FFCC00;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  border-bottom: 2px solid #FFCC00;
+}
+.os-header-title { font-weight: 700; font-size: 11px; }
+#os-close {
+  background: none;
+  border: 1px solid rgba(255,204,0,0.4);
+  color: #FFCC00;
+  cursor: pointer;
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 2px;
+  font-family: var(--font-mono);
+}
+#os-close:hover { background: rgba(255,204,0,0.15); }
+
+.os-body {
+  padding: 20px 22px;
+}
+.os-stamp {
+  position: absolute;
+  top: 55px;
+  right: 20px;
+  border: 2.5px solid #cc3333;
+  color: #cc3333;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  padding: 4px 10px;
+  border-radius: 2px;
+  transform: rotate(-8deg);
+  opacity: 0.7;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+.os-field {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px dashed #bbb;
+  padding: 5px 0;
+  font-size: 11px;
+  align-items: baseline;
+}
+.os-field-label {
+  min-width: 160px;
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #555;
+  padding-right: 10px;
+  flex-shrink: 0;
+}
+.os-field-val {
+  font-weight: 600;
+  font-size: 12px;
+  color: #111;
+}
+.os-section {
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #888;
+  margin: 14px 0 4px;
+  border-top: 1px solid #ccc;
+  padding-top: 8px;
+}
+.os-parts-list {
+  margin: 6px 0 0 0;
+  padding: 0;
+  list-style: none;
+}
+.os-parts-list li {
+  font-size: 11px;
+  padding: 3px 0 3px 14px;
+  position: relative;
+  border-bottom: 1px dotted #ddd;
+  color: #1a1a1a;
+}
+.os-parts-list li::before {
+  content: '›';
+  position: absolute;
+  left: 0;
+  color: var(--crit);
+  font-weight: 700;
+}
+.os-action-box {
+  background: #fff;
+  border: 1px solid #ccc;
+  border-left: 3px solid #cc3333;
+  border-radius: 2px;
+  padding: 8px 12px;
+  font-size: 11px;
+  line-height: 1.6;
+  margin-top: 8px;
+  color: #222;
+}
+.os-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 22px 16px;
+  border-top: 1px solid #ccc;
+  gap: 8px;
+}
+.os-btn-print {
+  flex: 1;
+  padding: 8px 0;
+  background: #1a1a1a;
+  color: #FFCC00;
+  border: none;
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: opacity 0.15s;
+}
+.os-btn-print:hover { opacity: 0.82; }
+.os-btn-cancel {
+  padding: 8px 16px;
+  background: transparent;
+  color: #666;
+  border: 1px solid #ccc;
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+.os-btn-cancel:hover { background: #eee; }
+
+/* ── RELATÓRIO DE OS ─────────────────────────── */
+#os-report-modal {
+  position: fixed; inset: 0;
+  background: rgba(0,39,76,0.82);
+  backdrop-filter: blur(4px);
+  z-index: 500;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.22s ease;
+}
+#os-report-modal.visible { opacity: 1; pointer-events: auto; }
+#os-report-box {
+  background: #FFFFFF;
+  border: 1px solid rgba(0,39,76,0.12);
+  border-top: 3px solid #c8a8ff;
+  border-radius: var(--radius-lg);
+  width: 820px; max-width: 97vw; max-height: 90vh;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.28);
+  animation: msgIn 0.22s ease;
+}
+#os-report-head {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 20px 12px;
+  border-bottom: 1px solid rgba(0,39,76,0.10);
+  flex-shrink: 0;
+}
+#os-report-head-title {
+  font-family: var(--font-mono);
+  font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+  color: #5a3e8a; font-weight: 600;
+}
+#os-report-head-sub {
+  font-family: var(--font-mono); font-size: 8.5px;
+  color: var(--text-muted); letter-spacing: 1px; margin-left: 6px;
+}
+#os-report-close {
+  margin-left: auto; background: none; border: none;
+  color: var(--text-muted); font-size: 16px; cursor: pointer;
+  padding: 0 4px; line-height: 1; transition: color 0.13s;
+}
+#os-report-close:hover { color: var(--crit); }
+
+/* Filtros */
+#os-report-filters {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 20px;
+  border-bottom: 1px solid rgba(0,39,76,0.08);
+  background: #f8f9fc;
+  flex-shrink: 0; flex-wrap: wrap;
+}
+.os-filter-label {
+  font-family: var(--font-mono); font-size: 8px; letter-spacing: 1.2px;
+  text-transform: uppercase; color: var(--text-muted); margin-right: 2px;
+}
+.os-filter-btn {
+  padding: 4px 10px;
+  background: #fff;
+  border: 1px solid rgba(0,39,76,0.16);
+  border-radius: 3px;
+  font-family: var(--font-mono); font-size: 9px;
+  color: var(--text-secondary); cursor: pointer;
+  transition: all 0.12s; letter-spacing: 0.5px;
+}
+.os-filter-btn:hover { border-color: #c8a8ff; color: #5a3e8a; }
+.os-filter-btn.active {
+  background: #c8a8ff; border-color: #c8a8ff;
+  color: #2a1a4e; font-weight: 600;
+}
+#os-report-search {
+  margin-left: auto;
+  padding: 4px 10px;
+  border: 1px solid rgba(0,39,76,0.16);
+  border-radius: 3px;
+  font-family: var(--font-mono); font-size: 9.5px;
+  color: var(--text-primary); outline: none;
+  width: 160px; background: #fff;
+  transition: border-color 0.14s;
+}
+#os-report-search:focus { border-color: #c8a8ff; }
+
+/* Sumário de KPIs */
+#os-report-kpis {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 0; border-bottom: 1px solid rgba(0,39,76,0.10); flex-shrink: 0;
+}
+.os-kpi-card {
+  padding: 10px 16px;
+  border-right: 1px solid rgba(0,39,76,0.08);
+  text-align: center;
+}
+.os-kpi-card:last-child { border-right: none; }
+.os-kpi-val {
+  display: block; font-family: var(--font-body);
+  font-size: 22px; font-weight: 700; line-height: 1;
+  color: var(--text-primary);
+}
+.os-kpi-val.kpi-crit  { color: var(--crit); }
+.os-kpi-val.kpi-warn  { color: var(--warn); }
+.os-kpi-val.kpi-good  { color: var(--good); }
+.os-kpi-val.kpi-purple{ color: #7b50c8; }
+.os-kpi-label {
+  display: block; font-family: var(--font-mono); font-size: 8px;
+  letter-spacing: 1px; text-transform: uppercase;
+  color: var(--text-muted); margin-top: 4px;
+}
+
+/* Tabela */
+#os-report-table-wrap {
+  flex: 1; overflow-y: auto; padding: 0;
+}
+#os-report-table-wrap::-webkit-scrollbar { width: 4px; }
+#os-report-table-wrap::-webkit-scrollbar-thumb { background: #c8a8ff; border-radius: 2px; }
+.os-report-table {
+  width: 100%; border-collapse: collapse; font-size: 11px;
+}
+.os-report-table thead th {
+  font-family: var(--font-mono); font-size: 8px; letter-spacing: 1.3px;
+  text-transform: uppercase; color: var(--text-muted);
+  padding: 8px 14px; border-bottom: 2px solid rgba(0,39,76,0.10);
+  background: #f8f9fc; text-align: left; white-space: nowrap;
+  position: sticky; top: 0; z-index: 2;
+}
+.os-report-table tbody tr {
+  cursor: pointer; transition: background 0.10s;
+  border-bottom: 1px solid rgba(0,39,76,0.06);
+}
+.os-report-table tbody tr:hover { background: #f4f0ff; }
+.os-report-table td {
+  padding: 8px 14px; color: var(--text-secondary);
+  vertical-align: middle;
+}
+.os-report-table td:first-child {
+  font-family: var(--font-mono); font-size: 10px;
+  font-weight: 600; color: var(--text-primary);
+}
+.os-status-badge {
+  display: inline-block;
+  padding: 2px 8px; border-radius: 2px;
+  font-family: var(--font-mono); font-size: 8px;
+  letter-spacing: 1px; text-transform: uppercase; font-weight: 700;
+}
+.os-badge-aberta    { background: rgba(204,51,51,0.10); color: var(--crit); border: 1px solid rgba(204,51,51,0.25); }
+.os-badge-andamento { background: rgba(196,125,16,0.10); color: var(--warn); border: 1px solid rgba(196,125,16,0.30); }
+.os-badge-concluida { background: rgba(46,139,80,0.10); color: var(--good); border: 1px solid rgba(46,139,80,0.25); }
+.os-badge-pendente  { background: rgba(123,80,200,0.10); color: #7b50c8; border: 1px solid rgba(123,80,200,0.25); }
+.os-pri-badge {
+  display: inline-block;
+  padding: 2px 7px; border-radius: 2px;
+  font-family: var(--font-mono); font-size: 8px;
+  letter-spacing: 0.8px; font-weight: 600;
+}
+.os-pri-critica  { background: rgba(204,51,51,0.08); color: var(--crit); }
+.os-pri-alta     { background: rgba(196,125,16,0.08); color: var(--warn); }
+.os-pri-media    { background: rgba(42,111,168,0.08); color: var(--chart-accent); }
+.os-pri-baixa    { background: rgba(46,139,80,0.08); color: var(--good); }
+
+/* Rodapé */
+#os-report-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 20px;
+  border-top: 1px solid rgba(0,39,76,0.10);
+  flex-shrink: 0;
+  background: #f8f9fc;
+}
+#os-report-count {
+  font-family: var(--font-mono); font-size: 9px;
+  color: var(--text-muted); letter-spacing: 0.8px;
+}
+.os-report-action-btn {
+  padding: 6px 16px;
+  background: #1a1a1a; color: #FFCC00;
+  border: none; border-radius: 2px;
+  font-family: var(--font-mono); font-size: 9px; font-weight: 700;
+  letter-spacing: 1.2px; text-transform: uppercase;
+  cursor: pointer; transition: opacity 0.14s;
+}
+.os-report-action-btn:hover { opacity: 0.82; }
+.os-report-action-btn.secondary {
+  background: transparent; color: #666;
+  border: 1px solid #ccc; margin-left: 6px;
+}
+.os-report-action-btn.secondary:hover { background: #eee; opacity: 1; }
+
+/* Detalhe expandido inline */
+.os-row-detail {
+  display: none; background: #fdf9ff;
+  border-top: 1px dashed #e0d4f5;
+}
+.os-row-detail.open { display: table-row; }
+.os-row-detail td {
+  padding: 10px 18px 12px;
+  font-size: 11px; line-height: 1.65;
+  color: var(--text-secondary);
+  border-left: 3px solid #c8a8ff;
+}
+.os-detail-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px;
+  margin-bottom: 8px;
+}
+.os-detail-item label {
+  display: block; font-family: var(--font-mono); font-size: 7.5px;
+  letter-spacing: 1px; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 2px;
+}
+.os-detail-item span {
+  font-size: 11px; color: var(--text-primary); font-weight: 500;
+}
+.os-detail-action {
+  background: #fff; border: 1px solid #ddd;
+  border-left: 3px solid #c8a8ff;
+  border-radius: 2px; padding: 7px 11px;
+  font-size: 11px; line-height: 1.55; color: #222;
+  margin-top: 6px;
+}
+.os-detail-parts {
+  margin: 6px 0 0 0; padding: 0; list-style: none;
+}
+.os-detail-parts li {
+  font-size: 10.5px; padding: 2px 0 2px 12px; position: relative;
+  border-bottom: 1px dotted #e8e0f0; color: #333;
+}
+.os-detail-parts li::before {
+  content: '›'; position: absolute; left: 0; color: #7b50c8; font-weight: 700;
+}
+
+/* ── CANVAS TOOLTIP ─────────────────────────── */
+#canvas-tooltip {
+  position: fixed;
+  background: rgba(255,255,255,0.98);
+  border: 1px solid rgba(0,39,76,0.14);
+  border-left: 2px solid #FFCC00;
+  border-radius: var(--radius);
+  padding: 7px 11px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-primary);
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(12px, -50%);
+  transition: opacity 0.12s ease;
+  z-index: 200;
+  box-shadow: 0 3px 14px rgba(0,39,76,0.12);
+  white-space: nowrap;
+  min-width: 120px;
+}
+#canvas-tooltip.visible { opacity: 1; }
+#canvas-tooltip .tt-title {
+  font-size: 7.5px;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: #7A5E00;
+  margin-bottom: 4px;
+  display: block;
+}
+#canvas-tooltip .tt-row {
+  display: flex; justify-content: space-between; gap: 14px;
+  font-size: 10px; line-height: 1.7;
+}
+#canvas-tooltip .tt-val { font-weight: 600; color: var(--text-primary); }
+
+/* ── COMPARATIVO MENSAL ─────────────────────── */
+#monthly-modal {
+  position: fixed; inset: 0;
+  background: rgba(0,39,76,0.80);
+  backdrop-filter: blur(4px);
+  z-index: 500;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.22s ease;
+}
+#monthly-modal.visible { opacity: 1; pointer-events: auto; }
+#monthly-box {
+  background: #FFFFFF;
+  border: 1px solid rgba(0,39,76,0.12);
+  border-top: 3px solid #FFCC00;
+  border-radius: var(--radius-lg);
+  width: 700px; max-width: 96vw; max-height: 88vh;
+  overflow-y: auto;
+  padding: 20px 22px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.25);
+  animation: msgIn 0.22s ease;
+}
+#monthly-box h2 {
+  font-family: var(--font-mono);
+  font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+  color: #7A5E00; margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+#monthly-box h2 span { color: var(--text-muted); font-size: 9px; }
+#monthly-close {
+  margin-left: auto; background: none; border: none;
+  color: var(--text-muted); font-size: 16px; cursor: pointer;
+  padding: 0 4px; line-height: 1;
+  transition: color 0.13s;
+}
+#monthly-close:hover { color: var(--crit); }
+.monthly-table {
+  width: 100%; border-collapse: collapse;
+  font-size: 11px; margin-bottom: 14px;
+}
+.monthly-table th {
+  font-family: var(--font-mono); font-size: 8px; letter-spacing: 1.3px;
+  text-transform: uppercase; color: var(--text-muted);
+  padding: 6px 10px; border-bottom: 2px solid rgba(0,39,76,0.14);
+  text-align: right; white-space: nowrap;
+}
+.monthly-table th:first-child { text-align: left; }
+.monthly-table td {
+  padding: 7px 10px; border-bottom: 1px solid rgba(0,39,76,0.07);
+  color: var(--text-secondary); text-align: right;
+}
+.monthly-table td:first-child { text-align: left; font-weight: 600; color: var(--text-primary); }
+.monthly-table tr:last-child td { border-bottom: none; }
+.monthly-table .td-up   { color: var(--crit); }
+.monthly-table .td-down { color: var(--good); }
+.monthly-table .td-flat { color: var(--text-muted); }
+.monthly-table .td-cur  { font-weight: 700; color: #7A5E00; }
+.monthly-insight {
+  background: rgba(255,204,0,0.08);
+  border: 1px solid rgba(255,204,0,0.35);
+  border-radius: var(--radius);
+  padding: 11px 14px;
+  font-size: 11px; line-height: 1.65;
+  color: var(--text-secondary);
+}
+.monthly-insight strong {
+  font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 1.2px;
+  text-transform: uppercase; color: #7A5E00; display: block; margin-bottom: 6px;
+}
+  </style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
+    <div id="sidebar-header">
+      <div id="logo-mark">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M10 2L18 6.5V13.5L10 18L2 13.5V6.5L10 2Z" stroke="#FFCC00" stroke-width="1.2" fill="none"/>
+          <circle cx="10" cy="10" r="3" fill="#FFCC00" opacity="0.7"/>
+        </svg>
+      </div>
+      <div>
+        <h1 id="logo-title">OGASAI</h1>
+        <span id="logo-sub">Engine · Net Zero 2050</span>
+      </div>
+    </div>
+
+    <div id="status-bar">
+      <span class="status-dot"></span>
+      <span id="status-text">Sistema Online</span>
+      <span id="status-time"></span>
+    </div>
+
+    <!-- NAV GROUPS -->
+    <nav id="sidebar-nav">
+
+      <!-- GESTÃO DE ENERGIA -->
+      <div class="nav-group nav-group-energy open" id="grp-energy">
+        <div class="nav-group-header" onclick="toggleGroup('grp-energy')">
+          <div class="nav-group-icon">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M6 1L9 5H7L9 11L3 5.5H5.5Z" fill="#FFCC00" opacity="0.9"/>
+            </svg>
+          </div>
+          <span class="nav-group-label">Gestão de Energia</span>
+          <span class="nav-group-arrow">›</span>
+        </div>
+        <div class="nav-items">
+          <button class="nav-btn" data-action="efficiency">
+            <span class="nav-btn-dot"></span>Eficiência de Turbocompressores
+          </button>
+          <button class="nav-btn" data-action="report">
+            <span class="nav-btn-dot"></span>Relatório de Consumo Operacional
+          </button>
+          <button class="nav-btn" data-action="pressure_temp">
+            <span class="nav-btn-dot"></span>Bombas de Transferência · Pressão
+          </button>
+          <button class="nav-btn" data-action="efficiency">
+            <span class="nav-btn-dot"></span>Unidades de Recuperação de Vapor
+          </button>
+        </div>
+      </div>
+
+      <!-- SUSTENTABILIDADE NET ZERO -->
+      <div class="nav-group nav-group-sustain open" id="grp-sustain">
+        <div class="nav-group-header" onclick="toggleGroup('grp-sustain')">
+          <div class="nav-group-icon">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <circle cx="6" cy="9" r="1.5" fill="#6ddb95" opacity="0.9"/>
+              <path d="M6 7.5 C6 5 4 3.5 2 4 C3 2 6 1.5 8 3 C10 4.5 10 7 8 8" stroke="#6ddb95" stroke-width="0.9" fill="none"/>
+            </svg>
+          </div>
+          <span class="nav-group-label">Sustentabilidade · Net Zero</span>
+          <span class="nav-group-arrow">›</span>
+        </div>
+        <div class="nav-items">
+          <button class="nav-btn" data-action="scatter">
+            <span class="nav-btn-dot"></span>Monitoramento de Emissões CO₂
+          </button>
+          <button class="nav-btn" data-action="netzero">
+            <span class="nav-btn-dot"></span>Simulação Net Zero · H₂ Verde 2050
+          </button>
+          <button class="nav-btn" data-action="netzero">
+            <span class="nav-btn-dot"></span>Créditos de Carbono · Portfólio
+          </button>
+          <button class="nav-btn" data-action="trend">
+            <span class="nav-btn-dot"></span>Tendência de Emissões · Histórico
+          </button>
+          <button class="nav-btn" data-action="monthly">
+            <span class="nav-btn-dot"></span>Comparativo Mensal · Eficiência
+          </button>
+        </div>
+      </div>
+
+      <!-- MANUTENÇÃO CONFIÁVEL -->
+      <div class="nav-group nav-group-manut open" id="grp-manut">
+        <div class="nav-group-header" onclick="toggleGroup('grp-manut')">
+          <div class="nav-group-icon">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <circle cx="6" cy="6" r="2.5" stroke="#c8a8ff" stroke-width="1" fill="none" opacity="0.9"/>
+              <path d="M6 1V3M6 9V11M1 6H3M9 6H11" stroke="#c8a8ff" stroke-width="0.9" opacity="0.7"/>
+            </svg>
+          </div>
+          <span class="nav-group-label">Manutenção Confiável</span>
+          <span class="nav-group-arrow">›</span>
+        </div>
+        <div class="nav-items">
+          <button class="nav-btn" data-action="diagnosis">
+            <span class="nav-btn-dot"></span>Diagnóstico Preditivo · Vibração
+          </button>
+          <button class="nav-btn" data-action="pressure_temp">
+            <span class="nav-btn-dot"></span>Temperatura · Perfil Térmico
+          </button>
+          <button class="nav-btn" data-action="scatter">
+            <span class="nav-btn-dot"></span>Espectro de Vibração · FFT
+          </button>
+          <button class="nav-btn" data-action="report">
+            <span class="nav-btn-dot"></span>Relatório de Integridade Geral
+          </button>
+          <button class="nav-btn" onclick="openOSReport()">
+            <span class="nav-btn-dot"></span>Relatório de Ordens de Serviço
+          </button>
+        </div>
+      </div>
+
+    </nav>
+
+    <!-- CHAT -->
+    <div id="chat-area">
+      <p class="chat-label">
+        <span>Comando Natural</span>
+        <button id="help-btn" title="Ver comandos disponíveis">?</button>
+      </p>
+      <div id="help-panel">
+        <div class="help-section-title">Análise &amp; Gráficos</div>
+        <div class="help-cmd" onclick="insertCmd('correlação CO₂ vibração')">
+          <span class="help-cmd-tag">correlação</span>
+          <span class="help-cmd-desc">Dispersão Vibração TC-01 × CO₂</span>
+        </div>
+        <div class="help-cmd" onclick="insertCmd('tendência histórica')">
+          <span class="help-cmd-tag">tendência</span>
+          <span class="help-cmd-desc">Evolução temporal CO₂ / eficiência</span>
+        </div>
+        <div class="help-cmd" onclick="insertCmd('net zero 2050')">
+          <span class="help-cmd-tag">net zero 2050</span>
+          <span class="help-cmd-desc">Simulação trajetória H₂ verde</span>
+        </div>
+        <div class="help-cmd" onclick="insertCmd('comparativo mensal')">
+          <span class="help-cmd-tag">comparativo mensal</span>
+          <span class="help-cmd-desc">Histórico por mês (efic. / CO₂ / vibração)</span>
+        </div>
+        <div class="help-section-title">Diagnóstico de Equipamentos</div>
+        <div class="help-cmd" onclick="insertCmd('diagnóstico sistema')">
+          <span class="help-cmd-tag">diagnóstico</span>
+          <span class="help-cmd-desc">Status geral ISO 10816 e recomendações</span>
+        </div>
+        <div class="help-cmd" onclick="insertCmd('pressão temperatura')">
+          <span class="help-cmd-tag">pressão temperatura</span>
+          <span class="help-cmd-desc">Perfil térmico BT-02</span>
+        </div>
+        <div class="help-cmd" onclick="insertCmd('eficiência energética')">
+          <span class="help-cmd-tag">eficiência</span>
+          <span class="help-cmd-desc">Análise de perdas URS</span>
+        </div>
+        <div class="help-section-title">Manutenção &amp; Ordens de Serviço</div>
+        <div class="help-cmd" onclick="insertCmd('compressor C-04')">
+          <span class="help-cmd-tag">compressor C-04</span>
+          <span class="help-cmd-desc">Diagnóstico + rascunho de OS preditiva</span>
+        </div>
+        <div class="help-cmd" onclick="insertCmd('bomba BT-02 transferência')">
+          <span class="help-cmd-tag">bomba BT-02</span>
+          <span class="help-cmd-desc">Falha no selo mecânico + OS corretiva</span>
+        </div>
+        <div class="help-cmd" onclick="insertCmd('vibração FFT espectro')">
+          <span class="help-cmd-tag">vibração FFT</span>
+          <span class="help-cmd-desc">Análise espectral TC-01 + OS crítica</span>
+        </div>
+        <div class="help-section-title">Relatórios</div>
+        <div class="help-cmd" onclick="insertCmd('relatório completo')">
+          <span class="help-cmd-tag">relatório completo</span>
+          <span class="help-cmd-desc">Overview executivo O&amp;G + Net Zero</span>
+        </div>
+      </div>
+      <div id="messages"></div>
+      <div id="input-row">
+        <textarea id="user-input" placeholder="Comando em linguagem natural..." rows="2"></textarea>
+        <button id="send-btn" title="Enviar">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <path d="M2 8H14M14 8L9 3M14 8L9 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div id="sidebar-footer">
+      <span style="color: rgba(255,255,255,0.35)">v3.0 · ISA 101 · O&amp;G</span>
+      <span style="color: #FFCC00">● ONLINE</span>
+    </div>
+  </aside>
+
+  <!-- MAIN PANEL -->
+  <main id="main">
+
+    <!-- TOP METRICS -->
+    <section id="metrics-row">
+
+      <!-- CO2 Tree Visualizer -->
+      <div id="eco-indicator">
+        <div id="eco-label">
+          <span id="eco-co2-val">—</span><br>
+          <span>ton/h CO₂</span>
+        </div>
+        <svg id="eco-tree-svg" width="52" height="60" viewBox="0 0 52 60">
+          <rect x="23" y="44" width="6" height="14" rx="2" fill="#5a4a3a" opacity="0.6"/>
+          <g id="tree-canopy"></g>
+        </svg>
+      </div>
+
+      <div class="metric-card">
+        <span class="metric-label">Vibração · TC-01</span>
+        <span class="metric-value" id="mv-vib">—</span>
+        <span class="metric-unit">mm/s · Turbocompressor</span>
+        <div class="metric-bar"><div class="metric-fill" id="mf-vib"></div></div>
+        <div class="metric-trend">
+          <canvas class="sparkline-canvas" id="spark-vib"></canvas>
+          <span class="trend-label" id="tl-vib"></span>
+        </div>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">Temperatura · BT-02</span>
+        <span class="metric-value" id="mv-temp">—</span>
+        <span class="metric-unit">°C · Bomba de Transferência</span>
+        <div class="metric-bar"><div class="metric-fill" id="mf-temp"></div></div>
+        <div class="metric-trend">
+          <canvas class="sparkline-canvas" id="spark-temp"></canvas>
+          <span class="trend-label" id="tl-temp"></span>
+        </div>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">Emissão CO₂ · URS</span>
+        <span class="metric-value" id="mv-co2">—</span>
+        <span class="metric-unit">ton/h · Unid. Recup. Vapor</span>
+        <div class="metric-bar"><div class="metric-fill" id="mf-co2"></div></div>
+        <div class="metric-trend">
+          <canvas class="sparkline-canvas" id="spark-co2"></canvas>
+          <span class="trend-label" id="tl-co2"></span>
+        </div>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">Eficiência Energética</span>
+        <span class="metric-value" id="mv-eff">—</span>
+        <span class="metric-unit">%</span>
+        <div class="metric-bar"><div class="metric-fill" id="mf-eff"></div></div>
+        <div class="metric-trend">
+          <canvas class="sparkline-canvas" id="spark-eff"></canvas>
+          <span class="trend-label" id="tl-eff"></span>
+        </div>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">Status · Sistema</span>
+        <span class="metric-value status-badge" id="mv-status">—</span>
+        <span class="metric-unit" id="mu-status">classificação</span>
+        <div class="metric-bar"><div class="metric-fill" id="mf-status"></div></div>
+        <div class="metric-trend">
+          <canvas class="sparkline-canvas" id="spark-status"></canvas>
+          <span class="trend-label" id="tl-status"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- CANVAS AREA -->
+    <section id="canvas-section">
+      <div id="canvas-header">
+        <div id="chart-title-wrap">
+          <span id="chart-status-dot"></span>
+          <span id="chart-title">Aguardando Análise</span>
+        </div>
+        <div id="canvas-controls">
+          <button class="ctrl-btn active" id="btn-scatter" onclick="showChart('scatter')">Correlação</button>
+          <button class="ctrl-btn" id="btn-trend" onclick="showChart('trend')">Tendência</button>
+          <button class="ctrl-btn" id="btn-netzero" onclick="showChart('netzero')">Net Zero</button>
+          <button class="ctrl-btn" id="btn-monthly" onclick="openMonthlyComparative()">Comparativo</button>
+        </div>
+      </div>
+      <div id="canvas-wrap">
+        <canvas id="main-canvas"></canvas>
+        <div id="canvas-idle">
+          <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+            <path d="M22 4L40 14V30L22 40L4 30V14L22 4Z" stroke="#FFCC00" stroke-width="1.2" fill="none" opacity="0.5"/>
+            <circle cx="22" cy="22" r="5" fill="#FFCC00" opacity="0.2"/>
+          </svg>
+          <p>Selecione uma análise para iniciar</p>
+          <p style="font-size:9px; opacity:0.4; letter-spacing:1.5px; text-transform:uppercase;">Use os controles ou envie um comando</p>
+        </div>
+      </div>
+
+      <!-- ESG FINANCIAL SIMULATOR -->
+      <div class="simulator-container" id="esg-simulator">
+        <div class="simulator-title">
+          <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+            <path d="M1 9L4 5.5L6.5 7.5L10 2" stroke="#c47d10" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Engine de Simulação Financeira · Impacto ESG
+          <span>TEMPO REAL</span>
+        </div>
+        <div class="sim-controls">
+          <div class="sim-field">
+            <label>Eficiência Operacional (%)</label>
+            <input type="range" id="sim-efficiency" min="50" max="100" value="82" step="0.5">
+            <div class="sim-val"><span id="sim-eff-val">82.0</span>%</div>
+          </div>
+          <div class="sim-field">
+            <label>Taxa de Carbono (USD/tCO₂e)</label>
+            <input type="number" id="sim-carbon-rate" value="85" min="0" max="500" step="5">
+          </div>
+        </div>
+        <div class="sim-kpis">
+          <div class="sim-kpi">
+            <span class="sim-kpi-label">Imposto de Carbono Projetado</span>
+            <span class="sim-kpi-val" id="sim-carbon-tax">—</span>
+            <span style="font-size:9px; color:var(--text-muted); font-family:var(--font-mono)">USD / mês</span>
+          </div>
+          <div class="sim-kpi kpi-loss">
+            <span class="sim-kpi-label">Perda Financeira · Desperdício</span>
+            <span class="sim-kpi-val" id="sim-waste-loss">—</span>
+            <span style="font-size:9px; color:var(--text-muted); font-family:var(--font-mono)">USD / mês</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RESULTS & POWERBI -->
+    <section id="bottom-row">
+      <div id="results-panel">
+        <p class="panel-label">Resultado da Análise</p>
+        <div id="results-content">
+          <p id="results-placeholder">Os resultados aparecerão após a análise.</p>
+        </div>
+      </div>
+      <div id="powerbi-panel">
+        <p class="panel-label">Dashboard Power BI</p>
+        <div id="powerbi-wrap">
+          <iframe id="powerbi-iframe" src="about:blank" frameborder="0" allowfullscreen title="Power BI Dashboard"></iframe>
+          <div id="powerbi-overlay">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" opacity="0.4">
+              <rect x="2" y="14" width="4" height="8" rx="1" fill="#FFCC00"/>
+              <rect x="8" y="8" width="4" height="14" rx="1" fill="#FFCC00"/>
+              <rect x="14" y="3" width="4" height="19" rx="1" fill="#4caf6c"/>
+            </svg>
+            <p>Power BI Embed</p>
+            <span>Cole a URL do relatório abaixo</span>
+            <div id="pbi-input-row">
+              <input type="text" id="pbi-url" placeholder="https://app.powerbi.com/..." />
+              <button onclick="loadPowerBI()">Carregar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div id="alert-toast"></div>
+
+<div id="canvas-tooltip">
+  <span class="tt-title" id="tt-title">—</span>
+  <div class="tt-row"><span id="tt-x-label">X</span><span class="tt-val" id="tt-x-val">—</span></div>
+  <div class="tt-row"><span id="tt-y-label">Y</span><span class="tt-val" id="tt-y-val">—</span></div>
+</div>
+
+<div id="monthly-modal">
+  <div id="monthly-box">
+    <h2>
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+        <rect x="1" y="3" width="11" height="9" rx="1.5" stroke="currentColor" stroke-width="1.1" fill="none"/>
+        <path d="M4 1v3M9 1v3" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+        <path d="M1 7h11" stroke="currentColor" stroke-width="0.9"/>
+      </svg>
+      Comparativo Mensal
+      <span>· Eficiência Energética · CO₂ · Vibração</span>
+      <button id="monthly-close" title="Fechar">✕</button>
+    </h2>
+    <table class="monthly-table" id="monthly-table-body"></table>
+    <div class="monthly-insight" id="monthly-insight-text"></div>
+  </div>
+</div>
+
+<!-- OS MODAL -->
+<div id="os-modal">
+  <div id="os-box">
+    <div class="os-header">
+      <span class="os-header-title">⚙ ORDEM DE SERVIÇO · OGASAI-ENGINE</span>
+      <button id="os-close">✕ FECHAR</button>
+    </div>
+    <div class="os-stamp" id="os-stamp">URGENTE</div>
+    <div class="os-body">
+      <div class="os-field">
+        <span class="os-field-label">Nº Requisição OS</span>
+        <span class="os-field-val" id="os-id">—</span>
+      </div>
+      <div class="os-field">
+        <span class="os-field-label">Data / Hora</span>
+        <span class="os-field-val" id="os-datetime">—</span>
+      </div>
+      <div class="os-field">
+        <span class="os-field-label">Ativo</span>
+        <span class="os-field-val" id="os-asset">—</span>
+      </div>
+      <div class="os-field">
+        <span class="os-field-label">Unidade / Localização</span>
+        <span class="os-field-val" id="os-location">—</span>
+      </div>
+      <div class="os-field">
+        <span class="os-field-label">Tipo de Manutenção</span>
+        <span class="os-field-val" id="os-type">—</span>
+      </div>
+      <div class="os-field">
+        <span class="os-field-label">Prioridade</span>
+        <span class="os-field-val" id="os-priority">—</span>
+      </div>
+      <div class="os-field">
+        <span class="os-field-label">Falha Detectada</span>
+        <span class="os-field-val" id="os-fault">—</span>
+      </div>
+
+      <div class="os-section">Peças / Materiais Sugeridos</div>
+      <ul class="os-parts-list" id="os-parts"></ul>
+
+      <div class="os-section">Ação Recomendada</div>
+      <div class="os-action-box" id="os-action">—</div>
+
+      <div class="os-field" style="margin-top:12px;">
+        <span class="os-field-label">Responsável Técnico</span>
+        <span class="os-field-val">_______________________________</span>
+      </div>
+      <div class="os-field">
+        <span class="os-field-label">Aprovação Engenharia</span>
+        <span class="os-field-val">_______________________________</span>
+      </div>
+    </div>
+    <div class="os-footer">
+      <button class="os-btn-print" onclick="window.print()">⎙ Imprimir OS</button>
+      <button class="os-btn-cancel" id="os-cancel">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- RELATÓRIO DE OS MODAL -->
+<div id="os-report-modal">
+  <div id="os-report-box">
+    <div id="os-report-head">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <rect x="1.5" y="1.5" width="11" height="11" rx="1.5" stroke="#7b50c8" stroke-width="1.2" fill="none"/>
+        <path d="M4 5h6M4 7.5h6M4 10h4" stroke="#7b50c8" stroke-width="1" stroke-linecap="round"/>
+      </svg>
+      <span id="os-report-head-title">Relatório de Ordens de Serviço</span>
+      <span id="os-report-head-sub">· Plataforma P-52 · OGASAI-Engine</span>
+      <button id="os-report-close" title="Fechar">✕</button>
+    </div>
+
+    <!-- KPIs -->
+    <div id="os-report-kpis">
+      <div class="os-kpi-card">
+        <span class="os-kpi-val" id="kpi-total">—</span>
+        <span class="os-kpi-label">Total OS</span>
+      </div>
+      <div class="os-kpi-card">
+        <span class="os-kpi-val kpi-crit" id="kpi-abertas">—</span>
+        <span class="os-kpi-label">Abertas</span>
+      </div>
+      <div class="os-kpi-card">
+        <span class="os-kpi-val kpi-warn" id="kpi-andamento">—</span>
+        <span class="os-kpi-label">Em Andamento</span>
+      </div>
+      <div class="os-kpi-card">
+        <span class="os-kpi-val kpi-good" id="kpi-concluidas">—</span>
+        <span class="os-kpi-label">Concluídas</span>
+      </div>
+    </div>
+
+    <!-- Filtros -->
+    <div id="os-report-filters">
+      <span class="os-filter-label">Status:</span>
+      <button class="os-filter-btn active" data-filter="todos" onclick="filterOSReport('todos', this)">Todos</button>
+      <button class="os-filter-btn" data-filter="ABERTA" onclick="filterOSReport('ABERTA', this)">Abertas</button>
+      <button class="os-filter-btn" data-filter="EM ANDAMENTO" onclick="filterOSReport('EM ANDAMENTO', this)">Em Andamento</button>
+      <button class="os-filter-btn" data-filter="CONCLUÍDA" onclick="filterOSReport('CONCLUÍDA', this)">Concluídas</button>
+      <button class="os-filter-btn" data-filter="PENDENTE" onclick="filterOSReport('PENDENTE', this)">Pendentes</button>
+      <input type="text" id="os-report-search" placeholder="🔍  Buscar ativo, nº OS..." oninput="searchOSReport(this.value)">
+    </div>
+
+    <!-- Tabela -->
+    <div id="os-report-table-wrap">
+      <table class="os-report-table">
+        <thead>
+          <tr>
+            <th>Nº OS</th>
+            <th>Data Abertura</th>
+            <th>Ativo</th>
+            <th>Tipo Manutenção</th>
+            <th>Prioridade</th>
+            <th>Status</th>
+            <th>Responsável</th>
+            <th>Prazo</th>
+          </tr>
+        </thead>
+        <tbody id="os-report-tbody"></tbody>
+      </table>
+    </div>
+
+    <div id="os-report-footer">
+      <span id="os-report-count">— ordens exibidas</span>
+      <div>
+        <button class="os-report-action-btn" onclick="window.print()">⎙ Imprimir Relatório</button>
+        <button class="os-report-action-btn secondary" onclick="document.getElementById('os-report-modal').classList.remove('visible')">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+let industrialData = [];
+let currentChart = 'scatter';
+let isProcessing = false;
+
+// ── DATA GENERATION ──────────────────────────
+
+// 🌐 URL do seu backend FastAPI (rodando localmente)
+const API_BASE_URL = 'http://localhost:8000/api/v1';
+
+// 🔄 Nova função assíncrona que busca os dados reais do servidor
+async function fetchCurrentTelemetry() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/telemetry/current`);
+        if (!response.ok) throw new Error('Erro ao ler a API');
+        const data = await response.json();
+
+        // Filtra os dados do compressor principal (TC-01)
+        const activeAsset = data.find(item => item.asset_id === 'TC-01');
+
+        if (activeAsset) {
+            // Repassa os dados reais da API para atualizar a interface
+            updateDashboardUI(activeAsset); 
+        }
+    } catch (error) {
+        console.error("Erro ao conectar com o backend:", error);
+    }
+}
+
+// 🛠️ Função que conecta os dados da API com os elementos da sua tela
+function updateDashboardUI(asset) {
+    // 1. Atualiza os cards principais de telemetria na tela
+    // (Certifique-se de que os IDs abaixo batem com os IDs dos seus elementos HTML)
+    const vibElement = document.getElementById('vibration-val') || document.querySelector('.vibration-value');
+    const tempElement = document.getElementById('temp-val') || document.querySelector('.temp-value');
+    const pressElement = document.getElementById('pressure-val') || document.querySelector('.pressure-value');
+    const co2Element = document.getElementById('co2-val') || document.querySelector('.co2-value');
+    const effElement = document.getElementById('efficiency-val') || document.querySelector('.efficiency-value');
+
+    if (vibElement) vibElement.innerText = `${asset.vibration.toFixed(2)} mm/s`;
+    if (tempElement) tempElement.innerText = `${asset.temperature.toFixed(1)} °C`;
+    if (pressElement) pressElement.innerText = `${asset.pressure.toFixed(2)} bar`;
+    if (co2Element) co2Element.innerText = `${asset.co2.toFixed(2)} t`;
+    if (effElement) effElement.innerText = `${asset.efficiency.toFixed(1)}%`;
+
+    // 2. Alimenta os arrays dos seus gráficos de Canvas existentes
+    // Procure no seu código original quais são os arrays que guardam o histórico dos gráficos.
+    // Geralmente eles se chamam algo como 'vibrationData', 'vibrationHistory', etc.
+    if (typeof vibrationHistory !== 'undefined') {
+        vibrationHistory.push(asset.vibration);
+        if (vibrationHistory.length > 30) vibrationHistory.shift(); // Mantém o limite de pontos
+    }
+    
+    if (typeof temperatureHistory !== 'undefined') {
+        temperatureHistory.push(asset.temperature);
+        if (temperatureHistory.length > 30) temperatureHistory.shift();
+    }
+
+    // 3. Força o redesenho do Canvas chamando a sua função original de renderização
+    // Procure no final do seu script original o nome da função que desenha os gráficos (ex: drawCharts(), render(), etc.)
+    if (typeof drawCharts === 'function') {
+        drawCharts();
+    } else if (typeof render === 'function') {
+        render();
+    }
+}
+
+// ⏱️ Inicia o ciclo de atualização a cada 2 segundos puxando os dados do Python
+setInterval(fetchCurrentTelemetry, 2000);
+
+// ── INTENT PARSER ────────────────────────────
+
+function parseUserIntent(input) {
+  const txt = input.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  if (/correlac|dispersao|scatter|co2.*vibr|vibr.*co2/.test(txt)) return { type: 'scatter',       confidence: 0.97 };
+  if (/diagnos|analis|sistema|saude|classific|status/.test(txt))  return { type: 'diagnosis',     confidence: 0.95 };
+  if (/net.?zero|hidrogenio|hidrogen|simulac|cenario|2050|descarbon/.test(txt)) return { type: 'netzero', confidence: 0.94 };
+  if (/tendenc|tempo|historico|evoluc|trend/.test(txt))           return { type: 'trend',         confidence: 0.92 };
+  if (/relatorio|completo|resumo|overview|sumario/.test(txt))     return { type: 'report',        confidence: 0.90 };
+  if (/pressao|temperatura/.test(txt))                            return { type: 'pressure_temp', confidence: 0.88 };
+  if (/eficiencia|energetico|energia/.test(txt))                  return { type: 'efficiency',    confidence: 0.88 };
+  if (/comparativo|mensal|mes.*anterior|historico.*mes/.test(txt))   return { type: 'monthly',       confidence: 0.91 };
+  return { type: 'unknown', confidence: 0.1 };
+}
+
+function executeIntent(intent) {
+  industrialData = generateIndustrialData();
+  updateMetrics();
+  switch (intent.type) {
+    case 'scatter':       return runScatterChart();
+    case 'diagnosis':     return runDiagnosis();
+    case 'netzero':       return runNetZero();
+    case 'trend':         return runTrendChart();
+    case 'report':        return runFullReport();
+    case 'pressure_temp': return runPressureTemp();
+    case 'efficiency':    return runEfficiency();
+    case 'monthly':       openMonthlyComparative(); return Promise.resolve();
+    default:              return runUnknown();
+  }
+}
+
+// ── METRICS UPDATE ───────────────────────────
+
+function updateMetrics() {
+  const d = industrialData;
+  const avg = key => d.reduce((s, p) => s + p[key], 0) / d.length;
+  const vib  = avg('vibration');
+  const temp = avg('temp');
+  const co2  = avg('co2');
+  const eff  = avg('efficiency');
+
+  setMetric('vib',  vib.toFixed(2),  Math.min(vib / 8 * 100, 100));
+  setMetric('temp', temp.toFixed(1), Math.min(temp / 250 * 100, 100));
+  setMetric('co2',  co2.toFixed(2),  Math.min(co2 / 5 * 100, 100));
+  setMetric('eff',  eff.toFixed(1),  eff);
+
+  const co2El = document.getElementById('mv-co2');
+  co2El.className = 'metric-value updating' + (co2 > 3.5 ? ' state-co2' : '');
+
+  const effEl = document.getElementById('mv-eff');
+  effEl.className = 'metric-value updating' + (eff < 80 ? ' state-warn' : '');
+
+  const diagnosis = getDiagnosis(vib);
+  const badge = document.getElementById('mv-status');
+  const fill  = document.getElementById('mf-status');
+  badge.textContent = diagnosis.label;
+  badge.className   = 'metric-value status-badge updating ' + diagnosis.cls;
+  fill.style.width  = diagnosis.pct + '%';
+  fill.style.background = diagnosis.fillColor;
+
+  const last10 = d.slice(-10);
+  drawSparkline('spark-vib',    last10.map(p => p.vibration),  'tl-vib',    false);
+  drawSparkline('spark-temp',   last10.map(p => p.temp),       'tl-temp',   false);
+  drawSparkline('spark-co2',    last10.map(p => p.co2),        'tl-co2',    true);
+  drawSparkline('spark-eff',    last10.map(p => p.efficiency), 'tl-eff',    false, true);
+  drawSparkline('spark-status', last10.map(p => p.vibration),  'tl-status', true);
+
+  updateEcoTree(co2);
+  document.getElementById('eco-co2-val').textContent = co2.toFixed(2);
+}
+
+function setMetric(id, val, pct) {
+  const el = document.getElementById('mv-' + id);
+  el.textContent = val;
+  el.classList.remove('updating');
+  void el.offsetWidth;
+  el.classList.add('updating');
+  const fillEl = document.getElementById('mf-' + id);
+  if (fillEl) fillEl.style.width = Math.min(pct, 100) + '%';
+}
+
+function getDiagnosis(avgVib) {
+  if (avgVib < 5) return { label: 'BOM',      cls: 'status-badge state-good', fillColor: 'var(--good)', pct: 85 };
+  if (avgVib < 7) return { label: 'RAZOÁVEL', cls: 'status-badge state-warn', fillColor: 'var(--warn)', pct: 50 };
+  return           { label: 'CRÍTICO',  cls: 'status-badge state-crit', fillColor: 'var(--crit)', pct: 20 };
+}
+
+// ── SPARKLINES ───────────────────────────────
+
+function drawSparkline(canvasId, values, labelId, upIsBad = false, upIsGood = false) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.offsetWidth || 100;
+  const H = 24;
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  if (!values || values.length < 2) return;
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min || 1;
+  const pad = { l: 2, r: 2, t: 3, b: 3 };
+
+  const toX = i => pad.l + (i / (values.length - 1)) * (W - pad.l - pad.r);
+  const toY = v => (H - pad.b) - ((v - min) / range) * (H - pad.t - pad.b);
+
+  ctx.beginPath();
+  ctx.moveTo(toX(0), H - pad.b);
+  values.forEach((v, i) => ctx.lineTo(toX(i), toY(v)));
+  ctx.lineTo(toX(values.length - 1), H - pad.b);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(255,204,0,0.08)';
+  ctx.fill();
+
+  ctx.beginPath();
+  values.forEach((v, i) => i === 0 ? ctx.moveTo(toX(i), toY(v)) : ctx.lineTo(toX(i), toY(v)));
+  ctx.strokeStyle = 'rgba(255,204,0,0.45)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  const first = values[0];
+  const last  = values[values.length - 1];
+  const delta = ((last - first) / Math.abs(first) * 100).toFixed(1);
+  const sign  = last > first ? '▲' : '▼';
+  const labelEl = document.getElementById(labelId);
+  if (labelEl) {
+    let cls = 'trend-flat';
+    if (last > first) cls = (upIsBad ? 'trend-up' : upIsGood ? 'trend-down' : 'trend-flat');
+    if (last < first) cls = (upIsBad ? 'trend-down' : upIsGood ? 'trend-up' : 'trend-flat');
+    labelEl.textContent = `${sign}${Math.abs(delta)}%`;
+    labelEl.className = 'trend-label ' + cls;
+  }
+}
+
+// ── ECO TREE SVG ─────────────────────────────
+
+function updateEcoTree(co2Val) {
+  const canopy = document.getElementById('tree-canopy');
+  if (!canopy) return;
+
+  const co2Min = 1.5, co2Max = 5;
+  const norm = 1 - Math.min(Math.max((co2Val - co2Min) / (co2Max - co2Min), 0), 1);
+
+  const layers = [
+    { cx: 26, cy: 32, r: 16, maxLeaves: 18 },
+    { cx: 26, cy: 22, r: 13, maxLeaves: 14 },
+    { cx: 26, cy: 14, r:  9, maxLeaves:  9 },
+  ];
+
+  let svg = '';
+
+  layers.forEach(layer => {
+    const count = Math.round(layer.maxLeaves * norm);
+    const opacity = 0.08 + norm * 0.20;
+    svg += `<circle cx="${layer.cx}" cy="${layer.cy}" r="${layer.r}" fill="#2e8b50" opacity="${opacity.toFixed(2)}"/>`;
+
+    for (let i = 0; i < count; i++) {
+      const angle = (i / count) * Math.PI * 2 + Math.random() * 0.4;
+      const dist  = layer.r * (0.4 + Math.random() * 0.55);
+      const lx    = (layer.cx + Math.cos(angle) * dist).toFixed(1);
+      const ly    = (layer.cy + Math.sin(angle) * dist).toFixed(1);
+      const lr    = (1.8 + Math.random() * 1.4).toFixed(1);
+      const lo    = (0.55 + norm * 0.35).toFixed(2);
+      svg += `<circle cx="${lx}" cy="${ly}" r="${lr}" fill="#4caf6c" opacity="${lo}"/>`;
+    }
+  });
+
+  canopy.innerHTML = svg;
+}
+
+// ── CANVAS HELPERS ───────────────────────────
+
+function getCanvas() {
+  const canvas = document.getElementById('main-canvas');
+  const wrap   = document.getElementById('canvas-wrap');
+  canvas.width  = wrap.clientWidth  * devicePixelRatio;
+  canvas.height = wrap.clientHeight * devicePixelRatio;
+  canvas.style.width  = wrap.clientWidth  + 'px';
+  canvas.style.height = wrap.clientHeight + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+  ctx.W = wrap.clientWidth;
+  ctx.H = wrap.clientHeight;
+  return ctx;
+}
+
+function clearCanvas(ctx) { ctx.clearRect(0, 0, ctx.W, ctx.H); }
+
+function drawGrid(ctx, pad) {
+  const { W, H } = ctx;
+  ctx.strokeStyle = 'rgba(0,0,0,0.06)';
+  ctx.lineWidth = 1;
+  const cols = 8, rows = 6;
+  for (let i = 0; i <= cols; i++) {
+    const x = pad.l + (W - pad.l - pad.r) * (i / cols);
+    ctx.beginPath(); ctx.moveTo(x, pad.t); ctx.lineTo(x, H - pad.b); ctx.stroke();
+  }
+  for (let i = 0; i <= rows; i++) {
+    const y = pad.t + (H - pad.t - pad.b) * (i / rows);
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
+  }
+}
+
+function drawAxes(ctx, pad) {
+  const { W, H } = ctx;
+  ctx.strokeStyle = 'rgba(0,0,0,0.18)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(pad.l, pad.t);
+  ctx.lineTo(pad.l, H - pad.b);
+  ctx.lineTo(W - pad.r, H - pad.b);
+  ctx.stroke();
+}
+
+function drawAxisLabel(ctx, text, x, y, color = '#7a8090', size = 9) {
+  ctx.fillStyle = color;
+  ctx.font = `${size}px 'IBM Plex Mono', monospace`;
+  ctx.fillText(text, x, y);
+}
+
+function mapX(val, min, max, padL, padR, W) { return padL + ((val - min) / (max - min)) * (W - padL - padR); }
+function mapY(val, min, max, padT, padB, H) { return (H - padB) - ((val - min) / (max - min)) * (H - padT - padB); }
+
+function hideIdle() { document.getElementById('canvas-idle').classList.add('hidden'); }
+function setChartTitle(title) { document.getElementById('chart-title').textContent = title; }
+
+// ── SCATTER CHART ────────────────────────────
+// Correlação: Vibração TC-01 × Emissão CO₂ URS com limites ISO 10816
+
+// ── SCATTER CHART ────────────────────────────
+// Correlação: Vibração TC-01 × Emissão CO₂ URS com limites ISO 10816
+
+function drawScatterChart() {
+  const ctx  = getCanvas();
+  const { W, H } = ctx;
+  const pad  = { l: 62, r: 28, t: 28, b: 50 };
+  const data = industrialData;
+
+  clearCanvas(ctx);
+  drawGrid(ctx, pad);
+  drawAxes(ctx, pad);
+
+  const vibMin = 2, vibMax = 9;
+  const co2Min = 1.5, co2Max = 6;
+
+  // 1. Zona de Alerta ISO 10816 (Vibração > 4.5 mm/s) - Conclusão do preenchimento
+  const xAlertISO = mapX(4.5, vibMin, vibMax, pad.l, pad.r, W);
+  ctx.fillStyle = 'rgba(204, 51, 51, 0.05)'; // --crit (Vermelho suave de fundo)
+  ctx.fillRect(xAlertISO, pad.t, W - pad.r - xAlertISO, H - pad.t - pad.b);
+
+  // Linha vertical tracejada no limite de 4.5 mm/s
+  ctx.strokeStyle = 'rgba(204, 51, 51, 0.4)';
+  ctx.lineWidth = 1.2;
+  ctx.setLineDash([5, 5]);
+  ctx.beginPath();
+  ctx.moveTo(xAlertISO, pad.t);
+  ctx.lineTo(xAlertISO, H - pad.b);
+  ctx.stroke();
+  ctx.setLineDash([]); // Reseta o padrão tracejado para o restante dos desenhos
+
+  // 2. Rótulos dos Eixos (Labels)
+  drawAxisLabel(ctx, "Emissão CO₂ (ton/h)", pad.l - 55, pad.t - 10);
+  drawAxisLabel(ctx, "Vibração TC-01 (mm/s)", W - pad.r - 130, H - pad.b + 38);
+
+  // 3. Renderização das Escalas (Eixo Y - CO₂)
+  const yTicks = 5;
+  for (let i = 0; i <= yTicks; i++) {
+    const val = co2Min + (co2Max - co2Min) * (i / yTicks);
+    const y = mapY(val, co2Min, co2Max, pad.t, pad.b, H);
+    ctx.fillStyle = 'var(--text-muted)';
+    ctx.font = "9px 'IBM Plex Mono', monospace";
+    ctx.textAlign = 'right';
+    ctx.fillText(val.toFixed(1), pad.l - 8, y + 3);
+  }
+
+  // 4. Renderização das Escalas (Eixo X - Vibração)
+  const xTicks = 7;
+  for (let i = 0; i <= xTicks; i++) {
+    const val = vibMin + (vibMax - vibMin) * (i / xTicks);
+    const x = mapX(val, vibMin, vibMax, pad.l, pad.r, W);
+    ctx.fillStyle = 'var(--text-muted)';
+    ctx.font = "9px 'IBM Plex Mono', monospace";
+    ctx.textAlign = 'center';
+    ctx.fillText(val.toFixed(1), x, H - pad.b + 15);
+  }
+
+  // 5. Plotagem dos Pontos da Dispersão (Estilo ISA 101)
+  data.forEach(p => {
+    const cx = mapX(p.vibration, vibMin, vibMax, pad.l, pad.r, W);
+    const cy = mapY(p.co2, co2Min, co2Max, pad.t, pad.b, H);
+
+    // Cores condicionais conforme o nível de severidade técnica
+    let pointColor = '#2e8b50'; // --good (Verde estável)
+    if (p.vibration > 4.5 && p.vibration <= 7.0) {
+      pointColor = '#c47d10';   // --warn (Alerta)
+    } else if (p.vibration > 7.0) {
+      pointColor = '#cc3333';   // --crit (Crítico)
+    }
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, 4, 0, Math.PI * 2);
+    ctx.fillStyle = pointColor;
+    ctx.fill();
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  });
+
+  // Atualiza o painel
+  setChartTitle("Correlação Dinâmica: Vibração TC-01 × Emissão CO₂ URS");
+  hideIdle();
+}
+// ── MOCK DATA GENERATOR (Para fallback caso a API local esteja fora de sintonia) ──
+function generateIndustrialData() {
+  const dataset = [];
+  const totalPoints = 40;
+  
+  for (let i = 0; i < totalPoints; i++) {
+    // Adiciona uma correlação realística: maior vibração costuma implicar em menor eficiência e maior CO2
+    const vibration = 2.2 + Math.random() * 5.8; 
+    const co2 = 1.8 + (vibration * 0.4) + (Math.random() - 0.5) * 0.6;
+    const temp = 55 + (vibration * 12) + (Math.random() - 0.5) * 8;
+    const efficiency = Math.max(50, 95 - (vibration * 3.2) - (Math.random() * 3));
+
+    dataset.push({ vibration, co2, temp, efficiency });
+  }
+  return dataset;
+}
+
+// ── CONTROLADORES DE RENDERIZAÇÃO E INTERAÇÃO ──
+function showChart(chartType) {
+  currentChart = chartType;
+  
+  // Atualiza botões ativos no topo do Canvas
+  document.querySelectorAll('.ctrl-btn').forEach(btn => btn.classList.remove('active'));
+  const activeBtn = document.getElementById(`btn-${chartType}`);
+  if (activeBtn) activeBtn.classList.add('active');
+
+  if (chartType === 'scatter') {
+    drawScatterChart();
+  } else {
+    // Fallback genérico para limpar canvas se mudar de tela
+    const ctx = getCanvas();
+    clearCanvas(ctx);
+    setChartTitle(`Análise: ${chartType.toUpperCase()}`);
+    hideIdle();
+  }
+}
+
+// ── SISTEMA DE NAVEGAÇÃO DA SIDEBAR ──
+function toggleGroup(groupId) {
+  const group = document.getElementById(groupId);
+  if (group) {
+    group.classList.toggle('open');
+  }
+}
+
+// ── INICIALIZAÇÃO DE EVENTOS E TELEMETRIA ──
+document.addEventListener('DOMContentLoaded', () => {
+  // Inicialização do relógio no canto esquerdo da barra de status
+  const updateClock = () => {
+    const timeEl = document.getElementById('status-time');
+    if (timeEl) {
+      timeEl.textContent = new Date().toLocaleTimeString('pt-BR');
+    }
+  };
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  // Carrega o conjunto inicial de dados
+  industrialData = generateIndustrialData();
+  updateMetrics();
+
+  // Mapeia cliques dos botões de navegação lateral para acionar os gráficos
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const action = btn.getAttribute('data-action');
+      if (action) showChart(action);
+    });
+  });
+});
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.arcTo(x + w, y, x + w, y + r, r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+  ctx.lineTo(x + r, y + h);
+  ctx.arcTo(x, y + h, x, y + h - r, r);
+  ctx.lineTo(x, y + r);
+  ctx.arcTo(x, y, x + r, y, r);
+  ctx.closePath();
+}
+
+// ── TREND CHART ──────────────────────────────
+// Tendência temporal: CO₂, Vibração, Eficiência com limites operacionais
+
+function drawTrendChart() {
+  const ctx  = getCanvas();
+  const { W, H } = ctx;
+  const pad  = { l: 62, r: 24, t: 30, b: 50 };
+  const data = industrialData;
+
+  clearCanvas(ctx);
+  drawGrid(ctx, pad);
+  drawAxes(ctx, pad);
+
+  // Normalizar todas as séries para o mesmo eixo Y (0–100%) para comparação visual
+  // Cada série tem seu próprio range mapeado para o espaço do gráfico com offset visual
+  const series = [
+    { key: 'co2',        color: '#e07432', label: 'CO₂  (ton/h)',  min: 1.5, max: 6,   threshold: 3.5,  thColor: 'rgba(200,90,0,0.4)',  thLabel: 'Meta 3.5' },
+    { key: 'vibration',  color: '#8b6be8', label: 'Vibr (mm/s)',   min: 2,   max: 9,   threshold: 4.5,  thColor: 'rgba(139,107,232,0.4)', thLabel: 'ISO 4.5' },
+    { key: 'efficiency', color: '#004724', label: 'Efic.   (%)',   min: 60,  max: 100, threshold: 80,   thColor: 'rgba(0,71,36,0.35)',   thLabel: 'Meta 80%' },
+  ];
+
+  // Linhas de threshold
+  series.forEach(s => {
+    const yTh = mapY(s.threshold, s.min, s.max, pad.t, pad.b, H);
+    ctx.strokeStyle = s.thColor;
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 6]);
+    ctx.beginPath();
+    ctx.moveTo(pad.l, yTh);
+    ctx.lineTo(W - pad.r, yTh);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = s.thColor.replace('0.', '0.7').replace('rgba','rgba');
+    ctx.font = "7.5px 'IBM Plex Mono', monospace";
+    ctx.fillText(s.thLabel, pad.l + 2, yTh - 2);
+  });
+
+  // Desenhar séries
+  series.forEach(s => {
+    // Área sombreada sob a linha
+    ctx.beginPath();
+    data.forEach((p, i) => {
+      const x = mapX(i, 0, data.length - 1, pad.l, pad.r, W);
+      const y = mapY(p[s.key], s.min, s.max, pad.t, pad.b, H);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.lineTo(mapX(data.length - 1, 0, data.length - 1, pad.l, pad.r, W), H - pad.b);
+    ctx.lineTo(pad.l, H - pad.b);
+    ctx.closePath();
+    ctx.fillStyle = s.color.replace('#', 'rgba(').split('').join('') ;
+    // Parse hex → rgba
+    const hx = s.color.replace('#','');
+    const rr = parseInt(hx.substring(0,2),16);
+    const gg = parseInt(hx.substring(2,4),16);
+    const bb = parseInt(hx.substring(4,6),16);
+    ctx.fillStyle = `rgba(${rr},${gg},${bb},0.04)`;
+    ctx.fill();
+
+    // Linha principal
+    ctx.beginPath();
+    data.forEach((p, i) => {
+      const x = mapX(i, 0, data.length - 1, pad.l, pad.r, W);
+      const y = mapY(p[s.key], s.min, s.max, pad.t, pad.b, H);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.strokeStyle = s.color;
+    ctx.lineWidth = 1.6;
+    ctx.stroke();
+
+    // Pontos de anomalia (acima do threshold para co2/vibr, abaixo para efic)
+    data.forEach((p, i) => {
+      const val = p[s.key];
+      const anomaly = s.key === 'efficiency' ? val < s.threshold : val > s.threshold;
+      if (anomaly) {
+        const x = mapX(i, 0, data.length - 1, pad.l, pad.r, W);
+        const y = mapY(val, s.min, s.max, pad.t, pad.b, H);
+        ctx.beginPath();
+        ctx.arc(x, y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${rr},${gg},${bb},0.85)`;
+        ctx.fill();
+      }
+    });
+  });
+
+  tooltipData = { type: 'trend', points: data, pad, ranges: {} };
+
+  // Labels eixo X
+  [0, 15, 30, 45, 59].forEach(i => {
+    const x = mapX(i, 0, data.length - 1, pad.l, pad.r, W);
+    drawAxisLabel(ctx, `t${i}`, x - 8, H - pad.b + 16);
+  });
+  ctx.save();
+  ctx.fillStyle = '#7a8090';
+  ctx.font = "9px 'IBM Plex Mono', monospace";
+  ctx.fillText('AMOSTRAS TEMPORAIS · TC-01 / URS-03 / BT-02', W / 2 - 108, H - 6);
+  ctx.restore();
+
+  // Legenda com thresholds
+  const legW = 182, legH = 72;
+  ctx.fillStyle = 'rgba(255,255,255,0.97)';
+  ctx.strokeStyle = 'rgba(0,0,0,0.10)';
+  ctx.lineWidth = 1;
+  roundRect(ctx, W - legW - 8, pad.t, legW, legH, 4);
+  ctx.fill(); ctx.stroke();
+  series.forEach((s, i) => {
+    ctx.fillStyle = s.color;
+    ctx.font = "9px 'IBM Plex Mono', monospace";
+    ctx.fillText('— ' + s.label, W - legW, pad.t + 16 + i * 18);
+  });
+}
+
+// ── NET ZERO CHART ───────────────────────────
+// Trajetória Net Zero com 3 cenários: BAU, Meta Paris, H₂ Verde
+
+function simulateNetZero() {
+  const base   = [];
+  const actual = [];
+  for (let y = 0; y <= 26; y++) {
+    base.push(100 + y * 0.8 + (Math.random() - 0.5) * 2);
+    const reduction = y > 5 ? (y - 5) * 3.5 : 0;
+    actual.push(Math.max(100 + y * 0.8 - reduction + (Math.random() - 0.5) * 2, 10));
+  }
+  return { base, actual };
+}
+
+function drawNetZeroChart() {
+  const ctx  = getCanvas();
+  const { W, H } = ctx;
+  const pad  = { l: 62, r: 28, t: 30, b: 50 };
+
+  clearCanvas(ctx);
+  drawGrid(ctx, pad);
+  drawAxes(ctx, pad);
+
+  const sim = simulateNetZero();
+
+  // Cenário Paris (redução moderada ~45% até 2050)
+  const paris = sim.base.map((v, y) => {
+    const r = y > 3 ? (y - 3) * 1.8 : 0;
+    return Math.max(v - r + (Math.random() - 0.5) * 1.5, 25);
+  });
+
+  const allVals = [...sim.base, ...sim.actual, ...paris];
+  const minV = Math.min(...allVals) - 5;
+  const maxV = Math.max(...allVals) + 5;
+  const years = sim.base.length;
+
+  // Área BAU
+  ctx.beginPath();
+  sim.base.forEach((v, i) => {
+    const x = mapX(i, 0, years - 1, pad.l, pad.r, W);
+    const y = mapY(v, minV, maxV, pad.t, pad.b, H);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.lineTo(mapX(years - 1, 0, years - 1, pad.l, pad.r, W), H - pad.b);
+  ctx.lineTo(pad.l, H - pad.b);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(224,82,82,0.06)';
+  ctx.fill();
+
+  // BAU linha
+  ctx.beginPath();
+  sim.base.forEach((v, i) => {
+    const x = mapX(i, 0, years - 1, pad.l, pad.r, W);
+    const y = mapY(v, minV, maxV, pad.t, pad.b, H);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.strokeStyle = 'rgba(224,82,82,0.7)';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([6, 4]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Meta Paris linha
+  ctx.beginPath();
+  paris.forEach((v, i) => {
+    const x = mapX(i, 0, years - 1, pad.l, pad.r, W);
+    const y = mapY(v, minV, maxV, pad.t, pad.b, H);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.strokeStyle = '#c47d10';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([4, 3]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // H₂ Verde linha (trajetória ótima)
+  ctx.beginPath();
+  sim.actual.forEach((v, i) => {
+    const x = mapX(i, 0, years - 1, pad.l, pad.r, W);
+    const y = mapY(v, minV, maxV, pad.t, pad.b, H);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.strokeStyle = '#004724';
+  ctx.lineWidth = 2.2;
+  ctx.stroke();
+
+  // Marcador Net Zero (onde actual cruza zero relativo)
+  const nzIdx = sim.actual.findIndex((v, i) => i > 0 && v <= 20);
+  if (nzIdx > 0) {
+    const xNZ = mapX(nzIdx, 0, years - 1, pad.l, pad.r, W);
+    const yNZ = mapY(sim.actual[nzIdx], minV, maxV, pad.t, pad.b, H);
+    ctx.beginPath();
+    ctx.arc(xNZ, yNZ, 5, 0, Math.PI * 2);
+    ctx.fillStyle = '#004724';
+    ctx.fill();
+    ctx.fillStyle = '#004724';
+    ctx.font = "bold 8px 'IBM Plex Mono', monospace";
+    ctx.fillText(`NET ZERO ~${2024 + nzIdx}`, xNZ + 6, yNZ + 4);
+  }
+
+  // Faixa de meta 1.5°C (Acordo de Paris - nível zero)
+  const yZero = mapY(minV + 5, minV, maxV, pad.t, pad.b, H);
+  ctx.strokeStyle = 'rgba(46,139,80,0.30)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([2, 8]);
+  ctx.beginPath();
+  ctx.moveTo(pad.l, yZero);
+  ctx.lineTo(W - pad.r, yZero);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = 'rgba(46,139,80,0.55)';
+  ctx.font = "7.5px 'IBM Plex Mono', monospace";
+  ctx.fillText('Nível Net Zero', pad.l + 4, yZero - 3);
+
+  tooltipData = { type: 'netzero', points: sim, pad, ranges: {} };
+
+  [0, 5, 10, 15, 20, 25].forEach(i => {
+    const x = mapX(i, 0, years - 1, pad.l, pad.r, W);
+    drawAxisLabel(ctx, (2024 + i).toString(), x - 14, H - pad.b + 16);
+  });
+  for (let v = Math.ceil(minV / 20) * 20; v <= maxV; v += 20) {
+    const y = mapY(v, minV, maxV, pad.t, pad.b, H);
+    drawAxisLabel(ctx, v.toFixed(0), pad.l - 42, y + 4);
+  }
+
+  ctx.save();
+  ctx.fillStyle = '#7a8090';
+  ctx.font = "9px 'IBM Plex Mono', monospace";
+  ctx.fillText('ÍNDICE DE EMISSÃO CO₂ (BASE 100) · 2024–2050', W / 2 - 120, H - 6);
+  ctx.restore();
+
+  // Legenda 3 cenários
+  ctx.fillStyle = 'rgba(255,255,255,0.97)';
+  ctx.strokeStyle = 'rgba(0,0,0,0.10)';
+  ctx.lineWidth = 1;
+  roundRect(ctx, W - 190, pad.t, 172, 58, 4);
+  ctx.fill(); ctx.stroke();
+  ctx.font = "9px 'IBM Plex Mono', monospace";
+  ctx.fillStyle = '#e05252'; ctx.fillText('- - Cenário BAU (sem ação)',      W - 182, pad.t + 14);
+  ctx.fillStyle = '#c47d10'; ctx.fillText('- - Meta Paris (+1.5°C)',          W - 182, pad.t + 28);
+  ctx.fillStyle = '#004724'; ctx.fillText('—  Trajetória H₂ Verde 2050',     W - 182, pad.t + 44);
+}
+
+// ── DIAGNOSIS CHART ──────────────────────────
+// Gráfico de barras: Saúde dos ativos principais com scores percentuais
+
+function drawDiagnosisChart() {
+  const ctx = getCanvas();
+  const { W, H } = ctx;
+  const pad = { l: 70, r: 30, t: 35, b: 55 };
+
+  clearCanvas(ctx);
+  drawGrid(ctx, pad);
+  drawAxes(ctx, pad);
+
+  const avg = key => industrialData.reduce((s, p) => s + p[key], 0) / industrialData.length;
+  const avgVib = avg('vibration');
+  const avgCO2 = avg('co2');
+  const avgEff = avg('efficiency');
+  const avgTemp = avg('temp');
+  const avgPres = avg('pressure');
+
+  // Scores de saúde (0–100, onde 100 = perfeito)
+  const assets = [
+    {
+      name: 'TC-01\nTurbocomp.',
+      score: Math.max(0, Math.min(100, 100 - ((avgVib - 2) / 7) * 100)),
+      detail: `${avgVib.toFixed(2)} mm/s`,
+      limit: 4.5,
+      val: avgVib,
+      max: 9
+    },
+    {
+      name: 'URS-03\nCO₂',
+      score: Math.max(0, Math.min(100, 100 - ((avgCO2 - 1.5) / 4.5) * 100)),
+      detail: `${avgCO2.toFixed(2)} t/h`,
+      limit: 3.5,
+      val: avgCO2,
+      max: 6
+    },
+    {
+      name: 'URS\nEficiência',
+      score: Math.max(0, Math.min(100, avgEff)),
+      detail: `${avgEff.toFixed(1)}%`,
+      limit: 80,
+      val: avgEff,
+      max: 100
+    },
+    {
+      name: 'BT-02\nTemp. Selo',
+      score: Math.max(0, Math.min(100, 100 - ((avgTemp - 150) / 120) * 100)),
+      detail: `${avgTemp.toFixed(1)} °C`,
+      limit: 210,
+      val: avgTemp,
+      max: 280
+    },
+    {
+      name: 'BT-02\nPressão',
+      score: Math.max(0, Math.min(100, (avgPres / 10) * 100)),
+      detail: `${avgPres.toFixed(2)} bar`,
+      limit: 6,
+      val: avgPres,
+      max: 12
+    },
+  ];
+
+  const n = assets.length;
+  const barW = (W - pad.l - pad.r) / n * 0.55;
+  const gap   = (W - pad.l - pad.r) / n;
+
+  // Eixo Y: 0–100
+  for (let v = 0; v <= 100; v += 20) {
+    const y = mapY(v, 0, 100, pad.t, pad.b, H);
+    drawAxisLabel(ctx, v + '%', pad.l - 50, y + 4);
+    ctx.strokeStyle = 'rgba(0,0,0,0.05)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
+  }
+
+  // Linha de atenção 60%
+  const yWarn = mapY(60, 0, 100, pad.t, pad.b, H);
+  ctx.strokeStyle = 'rgba(196,125,16,0.40)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 5]);
+  ctx.beginPath(); ctx.moveTo(pad.l, yWarn); ctx.lineTo(W - pad.r, yWarn); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = 'rgba(196,125,16,0.65)';
+  ctx.font = "7.5px 'IBM Plex Mono', monospace";
+  ctx.fillText('⚠ Atenção < 60%', pad.l + 4, yWarn - 3);
+
+  assets.forEach((a, i) => {
+    const cx = pad.l + gap * i + gap / 2;
+    const x  = cx - barW / 2;
+    const yTop = mapY(a.score, 0, 100, pad.t, pad.b, H);
+    const barH = (H - pad.b) - yTop;
+
+    // Cor da barra pelo score
+    let barColor;
+    if (a.score >= 75)      barColor = ['0,71,36',   0.80];
+    else if (a.score >= 50) barColor = ['196,125,16', 0.80];
+    else                    barColor = ['204,51,51',  0.80];
+
+    // Gradiente vertical
+    const grad = ctx.createLinearGradient(0, yTop, 0, H - pad.b);
+    grad.addColorStop(0,   `rgba(${barColor[0]},${barColor[1]})`);
+    grad.addColorStop(1,   `rgba(${barColor[0]},0.20)`);
+    ctx.fillStyle = grad;
+    ctx.fillRect(x, yTop, barW, barH);
+
+    // Borda
+    ctx.strokeStyle = `rgba(${barColor[0]},0.50)`;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x, yTop, barW, barH);
+
+    // Score no topo da barra
+    ctx.fillStyle = `rgba(${barColor[0]},1)`;
+    ctx.font = "bold 10px 'IBM Plex Sans', sans-serif";
+    ctx.textAlign = 'center';
+    ctx.fillText(Math.round(a.score) + '%', cx, yTop - 5);
+
+    // Detalhe abaixo da barra
+    ctx.fillStyle = '#6a7080';
+    ctx.font = "8.5px 'IBM Plex Mono', monospace";
+    ctx.fillText(a.detail, cx, H - pad.b + 14);
+
+    // Nome do ativo (quebrar em 2 linhas)
+    const parts = a.name.split('\n');
+    ctx.fillStyle = '#3a4050';
+    ctx.font = "8px 'IBM Plex Mono', monospace";
+    parts.forEach((p, li) => ctx.fillText(p, cx, H - pad.b + 26 + li * 11));
+    ctx.textAlign = 'left';
+  });
+
+  // Título eixo Y
+  ctx.save();
+  ctx.fillStyle = '#7a8090';
+  ctx.font = "9px 'IBM Plex Mono', monospace";
+  ctx.fillText('ÍNDICE DE SAÚDE DO ATIVO (%) · DIAGNÓSTICO PREDITIVO', W / 2 - 148, H - 4);
+  ctx.restore();
+
+  tooltipData = { type: 'diagnosis', points: assets, pad, ranges: {} };
+}
+
+// ── PRESSURE/TEMP CHART ───────────────────────
+// Gráfico de linhas duplas: Temperatura + Pressão da BT-02 com envelopes
+
+function drawPressureTempChart() {
+  const ctx = getCanvas();
+  const { W, H } = ctx;
+  // Dois eixos Y separados visualmente (esquerdo = temperatura, direito = pressão)
+  const pad = { l: 68, r: 68, t: 30, b: 50 };
+  const data = industrialData;
+
+  clearCanvas(ctx);
+  drawGrid(ctx, pad);
+
+  // Eixo esquerdo (temperatura)
+  ctx.strokeStyle = 'rgba(0,0,0,0.18)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, H - pad.b);
+  ctx.lineTo(W - pad.r, H - pad.b);
+  ctx.stroke();
+  // Eixo direito (pressão)
+  ctx.beginPath();
+  ctx.moveTo(W - pad.r, pad.t); ctx.lineTo(W - pad.r, H - pad.b);
+  ctx.stroke();
+
+  const tempMin = 150, tempMax = 260;
+  const presMin = 5, presMax = 12;
+
+  // Zona crítica temperatura > 220°C
+  const yTempCrit = mapY(220, tempMin, tempMax, pad.t, pad.b, H);
+  ctx.fillStyle = 'rgba(224,82,82,0.06)';
+  ctx.fillRect(pad.l, pad.t, W - pad.l - pad.r, yTempCrit - pad.t);
+  ctx.strokeStyle = 'rgba(224,82,82,0.45)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath(); ctx.moveTo(pad.l, yTempCrit); ctx.lineTo(W - pad.r, yTempCrit); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = 'rgba(224,82,82,0.65)';
+  ctx.font = "8px 'IBM Plex Mono', monospace";
+  ctx.fillText('LIMITE CRÍTICO 220°C', pad.l + 4, yTempCrit - 3);
+
+  // Eixos valores temperatura (esq)
+  for (let v = tempMin; v <= tempMax; v += 20) {
+    const y = mapY(v, tempMin, tempMax, pad.t, pad.b, H);
+    drawAxisLabel(ctx, v + '°', pad.l - 52, y + 4, '#e07432');
+  }
+  // Eixo valores pressão (dir)
+  for (let v = presMin; v <= presMax; v += 1) {
+    const y = mapY(v, presMin, presMax, pad.t, pad.b, H);
+    ctx.fillStyle = '#2a6fa8';
+    ctx.font = "9px 'IBM Plex Mono', monospace";
+    ctx.fillText(v + 'b', W - pad.r + 5, y + 4);
+  }
+
+  // Linha de temperatura (eixo esq)
+  ctx.beginPath();
+  data.forEach((p, i) => {
+    const x = mapX(i, 0, data.length - 1, pad.l, pad.r, W);
+    const y = mapY(p.temp, tempMin, tempMax, pad.t, pad.b, H);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.strokeStyle = '#e07432';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Pontos críticos (temp > 220)
+  data.forEach((p, i) => {
+    if (p.temp > 220) {
+      const x = mapX(i, 0, data.length - 1, pad.l, pad.r, W);
+      const y = mapY(p.temp, tempMin, tempMax, pad.t, pad.b, H);
+      ctx.beginPath();
+      ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(224,82,82,0.90)';
+      ctx.fill();
+    }
+  });
+
+  // Linha de pressão (eixo dir — mapeada com pad.r = 68 para aproveitar eixo direito)
+  ctx.beginPath();
+  data.forEach((p, i) => {
+    const x = mapX(i, 0, data.length - 1, pad.l, pad.r, W);
+    const y = mapY(p.pressure, presMin, presMax, pad.t, pad.b, H);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.strokeStyle = '#2a6fa8';
+  ctx.lineWidth = 1.6;
+  ctx.setLineDash([6, 3]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  tooltipData = { type: 'pressureTemp', points: data, pad, ranges: { tempMin, tempMax, presMin, presMax } };
+
+  [0, 15, 30, 45, 59].forEach(i => {
+    const x = mapX(i, 0, data.length - 1, pad.l, pad.r, W);
+    drawAxisLabel(ctx, `t${i}`, x - 8, H - pad.b + 16);
+  });
+
+  ctx.save();
+  ctx.fillStyle = '#7a8090';
+  ctx.font = "9px 'IBM Plex Mono', monospace";
+  ctx.fillText('AMOSTRAS · BOMBA DE TRANSFERÊNCIA BT-02', W / 2 - 100, H - 6);
+  ctx.restore();
+
+  // Labels eixo Y esq/dir
+  ctx.save();
+  ctx.fillStyle = '#e07432';
+  ctx.font = "8.5px 'IBM Plex Mono', monospace";
+  ctx.translate(13, H / 2 + 45);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText('TEMPERATURA SELO (°C)', 0, 0);
+  ctx.restore();
+  ctx.save();
+  ctx.fillStyle = '#2a6fa8';
+  ctx.font = "8.5px 'IBM Plex Mono', monospace";
+  ctx.translate(W - 10, H / 2 + 40);
+  ctx.rotate(Math.PI / 2);
+  ctx.fillText('PRESSÃO DIFERENCIAL (bar)', 0, 0);
+  ctx.restore();
+
+  // Legenda
+  ctx.fillStyle = 'rgba(255,255,255,0.97)';
+  ctx.strokeStyle = 'rgba(0,0,0,0.10)';
+  ctx.lineWidth = 1;
+  roundRect(ctx, W - pad.r - 170, pad.t, 154, 44, 4);
+  ctx.fill(); ctx.stroke();
+  ctx.font = "9px 'IBM Plex Mono', monospace";
+  ctx.fillStyle = '#e07432'; ctx.fillText('— Temperatura Selo (°C)',       W - pad.r - 162, pad.t + 14);
+  ctx.fillStyle = '#2a6fa8'; ctx.fillText('- - Pressão Diferencial (bar)', W - pad.r - 162, pad.t + 28);
+}
+
+// ── EFFICIENCY CHART ──────────────────────────
+// Gráfico de barras horizontais: Eficiência por subsistema com meta e benchmark
+
+function drawEfficiencyChart() {
+  const ctx = getCanvas();
+  const { W, H } = ctx;
+  const pad = { l: 145, r: 80, t: 28, b: 40 };
+
+  clearCanvas(ctx);
+
+  const avg = key => industrialData.reduce((s, p) => s + p[key], 0) / industrialData.length;
+  const avgEff = avg('efficiency');
+  const avgCO2 = avg('co2');
+
+  // Subsistemas e eficiências derivadas
+  const subsystems = [
+    { name: 'URS-03 · Recup. Vapor',    val: avgEff,                          meta: 88, benchmark: 93 },
+    { name: 'TC-01 · Turbocompressor',   val: Math.max(50, avgEff - 4 + (Math.random()-0.5)*3), meta: 85, benchmark: 90 },
+    { name: 'BT-02 · Bomba Transf.',     val: Math.max(50, avgEff - 7 + (Math.random()-0.5)*4), meta: 82, benchmark: 87 },
+    { name: 'SMG-01 · Med. Gás',         val: Math.min(98, avgEff + 6 + (Math.random()-0.5)*2), meta: 95, benchmark: 97 },
+    { name: 'URS · Combustão',           val: Math.max(40, 100 - (avgCO2 / 5) * 60),            meta: 80, benchmark: 88 },
+  ];
+
+  const n = subsystems.length;
+  const barH = Math.min(22, (H - pad.t - pad.b) / n * 0.55);
+  const rowH  = (H - pad.t - pad.b) / n;
+
+  const minVal = 40, maxVal = 100;
+  const toX = v => pad.l + ((v - minVal) / (maxVal - minVal)) * (W - pad.l - pad.r);
+
+  // Grade vertical
+  for (let v = minVal; v <= maxVal; v += 10) {
+    const x = toX(v);
+    ctx.strokeStyle = 'rgba(0,0,0,0.06)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x, pad.t); ctx.lineTo(x, H - pad.b); ctx.stroke();
+    ctx.fillStyle = '#9aa0ac';
+    ctx.font = "8px 'IBM Plex Mono', monospace";
+    ctx.textAlign = 'center';
+    ctx.fillText(v + '%', x, H - pad.b + 14);
+  }
+  ctx.textAlign = 'left';
+
+  // Eixo X
+  ctx.strokeStyle = 'rgba(0,0,0,0.18)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, H - pad.b); ctx.lineTo(W - pad.r, H - pad.b);
+  ctx.stroke();
+
+  // Linha de meta geral 80%
+  const xMeta = toX(80);
+  ctx.strokeStyle = 'rgba(196,125,16,0.45)';
+  ctx.lineWidth = 1.2;
+  ctx.setLineDash([4,4]);
+  ctx.beginPath(); ctx.moveTo(xMeta, pad.t); ctx.lineTo(xMeta, H - pad.b); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = 'rgba(196,125,16,0.70)';
+  ctx.font = "7.5px 'IBM Plex Mono', monospace";
+  ctx.textAlign = 'center';
+  ctx.fillText('META', xMeta, pad.t - 5);
+  ctx.textAlign = 'left';
+
+  subsystems.forEach((s, i) => {
+    const cy = pad.t + rowH * i + rowH / 2;
+    const y  = cy - barH / 2;
+    const xEnd = toX(s.val);
+
+    // Cor baseada no score vs meta
+    let r, g, b;
+    if (s.val >= s.meta)       { r=0;   g=71;  b=36;  }
+    else if (s.val >= s.meta - 10) { r=196; g=125; b=16; }
+    else                          { r=204; g=51;  b=51; }
+
+    // Barra de fundo (benchmark)
+    const xBench = toX(s.benchmark);
+    ctx.fillStyle = 'rgba(0,0,0,0.05)';
+    ctx.fillRect(pad.l, y, xBench - pad.l, barH);
+
+    // Barra principal
+    const grad = ctx.createLinearGradient(pad.l, 0, xEnd, 0);
+    grad.addColorStop(0, `rgba(${r},${g},${b},0.15)`);
+    grad.addColorStop(1, `rgba(${r},${g},${b},0.80)`);
+    ctx.fillStyle = grad;
+    ctx.fillRect(pad.l, y, xEnd - pad.l, barH);
+
+    // Borda
+    ctx.strokeStyle = `rgba(${r},${g},${b},0.45)`;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(pad.l, y, xEnd - pad.l, barH);
+
+    // Marcador benchmark
+    ctx.strokeStyle = 'rgba(42,111,168,0.60)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(xBench, y - 2); ctx.lineTo(xBench, y + barH + 2); ctx.stroke();
+
+    // Nome do subsistema
+    ctx.fillStyle = '#3a4050';
+    ctx.font = "9px 'IBM Plex Mono', monospace";
+    ctx.textAlign = 'right';
+    ctx.fillText(s.name, pad.l - 6, cy + 3);
+    ctx.textAlign = 'left';
+
+    // Valor na ponta da barra
+    ctx.fillStyle = `rgba(${r},${g},${b},1)`;
+    ctx.font = "bold 9px 'IBM Plex Sans', sans-serif";
+    ctx.fillText(s.val.toFixed(1) + '%', xEnd + 4, cy + 3);
+  });
+
+  ctx.save();
+  ctx.fillStyle = '#7a8090';
+  ctx.font = "9px 'IBM Plex Mono', monospace";
+  ctx.textAlign = 'center';
+  ctx.fillText('EFICIÊNCIA ENERGÉTICA POR SUBSISTEMA (%) · P-52', W / 2, H - 4);
+  ctx.textAlign = 'left';
+  ctx.restore();
+
+  // Legenda
+  ctx.fillStyle = 'rgba(255,255,255,0.97)';
+  ctx.strokeStyle = 'rgba(0,0,0,0.10)';
+  ctx.lineWidth = 1;
+  roundRect(ctx, W - pad.r - 2, pad.t, pad.r - 4, 58, 4);
+  ctx.fill(); ctx.stroke();
+  ctx.font = "8px 'IBM Plex Mono', monospace";
+  ctx.fillStyle = '#3a4050';   ctx.fillText('█ Real',      W - pad.r + 4, pad.t + 13);
+  ctx.fillStyle = '#2a6fa8';   ctx.fillText('| Benchmark', W - pad.r + 4, pad.t + 27);
+  ctx.fillStyle = '#c47d10';   ctx.fillText('| Meta 80%',  W - pad.r + 4, pad.t + 41);
+
+  tooltipData = { type: 'efficiency', points: subsystems, pad, ranges: {} };
+}
+
+
+
+function generateDiagnosis() {
+  const avg = key => industrialData.reduce((s, p) => s + p[key], 0) / industrialData.length;
+  const avgVib = avg('vibration'), avgCO2 = avg('co2'), avgEff = avg('efficiency');
+  const diag = getDiagnosis(avgVib);
+  const recs = [];
+  if (avgVib > 5)     recs.push({ type: 'alert', text: 'Turbocompressor TC-01: vibração acima do limite ISO 10816.' });
+  if (avgCO2 > 3.5)   recs.push({ type: 'alert', text: 'Emissão CO₂ elevada na URS — verificar queima de gás.' });
+  if (avgEff < 80)    recs.push({ type: 'alert', text: 'Eficiência abaixo de 80% — recuperação de calor residual indicada.' });
+  if (!recs.length)   recs.push({ type: 'good',  text: 'Sistema dentro dos parâmetros operacionais normais.' });
+  return { status: diag.label, cls: diag.cls, avgVib: avgVib.toFixed(2), avgCO2: avgCO2.toFixed(2), avgEff: avgEff.toFixed(1), recommendations: recs };
+}
+
+function runScatterChart() {
+  hideIdle(); setChartTitle('Correlação: Vibração TC-01 × Emissão CO₂ URS');
+  setActiveBtn('btn-scatter'); currentChart = 'scatter';
+  drawScatterChart();
+  const d = generateDiagnosis();
+  setResults(`
+    <div class="result-block">
+      <span class="result-tag">Correlação</span>
+      <p class="result-value">Vibração × CO₂ · Coef. positivo detectado</p>
+    </div>
+    <div class="result-block">
+      <span class="result-tag">Status Operacional</span>
+      <p class="result-${d.cls.includes('good') ? 'good' : d.cls.includes('warn') ? 'alert' : 'crit'}">${d.status}</p>
+    </div>
+    <div class="result-block">
+      <span class="result-tag">Ação Recomendada</span>
+      <p>${d.recommendations[0].text}</p>
+    </div>`);
+  return typeAIMessage(`Correlação Vibração×CO₂ mapeada. Vibração média: ${d.avgVib} mm/s. Emissão CO₂: ${d.avgCO2} ton/h. ${d.recommendations[0].text}`);
+}
+
+function runDiagnosis() {
+  hideIdle(); setChartTitle('Diagnóstico Preditivo · Saúde dos Ativos · P-52');
+  setActiveBtn('btn-scatter'); currentChart = 'diagnosis';
+  drawDiagnosisChart();
+  const d = generateDiagnosis();
+  setResults(`
+    <div class="result-block">
+      <span class="result-tag">Classificação ISO 10816</span>
+      <p class="result-${d.cls.includes('good') ? 'good' : d.cls.includes('warn') ? 'alert' : 'crit'}">${d.status} · ${d.avgVib} mm/s</p>
+    </div>
+    <div class="result-block">
+      <span class="result-tag">CO₂ URS</span>
+      <p class="${parseFloat(d.avgCO2) > 3.5 ? 'result-alert' : 'result-good'}">${d.avgCO2} ton/h</p>
+    </div>
+    <div class="result-block">
+      <span class="result-tag">Eficiência Energética</span>
+      <p class="${parseFloat(d.avgEff) < 80 ? 'result-alert' : 'result-good'}">${d.avgEff}%</p>
+    </div>
+    <div class="result-block">
+      <span class="result-tag">Ações Prioritárias</span>
+      ${d.recommendations.map((r, i) => `<p class="result-${r.type}">${i + 1}. ${r.text}</p>`).join('')}
+    </div>`);
+  return typeAIMessage(`Diagnóstico completo. ${d.status}: vibração ${d.avgVib} mm/s, CO₂ ${d.avgCO2} ton/h, eficiência ${d.avgEff}%.`);
+}
+
+function runNetZero() {
+  hideIdle(); setChartTitle('Simulação Net Zero 2050 · Trajetória H₂ Verde');
+  setActiveBtn('btn-netzero'); currentChart = 'netzero';
+  drawNetZeroChart();
+  const sim = simulateNetZero();
+  const reduction = ((sim.base[26] - sim.actual[26]) / sim.base[26] * 100).toFixed(1);
+  setResults(`
+    <div class="result-block">
+      <span class="result-tag">Redução Projetada 2050</span>
+      <p class="result-good">${reduction}% vs. Cenário BAU</p>
+    </div>
+    <div class="result-block">
+      <span class="result-tag">Vetor Tecnológico</span>
+      <p class="result-value">Hidrogênio Verde · Eletrólise PEM</p>
+    </div>
+    <div class="result-block">
+      <span class="result-tag">Alinhamento ODS</span>
+      <p class="result-good">ODS 7 — Energia Acessível · ODS 13 — Ação Climática</p>
+    </div>`);
+  return typeAIMessage(`Net Zero: projeção de ${reduction}% de redução até 2050 com H₂ verde. Alinhado ao Acordo de Paris.`);
+}
+
+function runTrendChart() {
+  hideIdle(); setChartTitle('Tendência Temporal · CO₂ · Vibração · Eficiência');
+  setActiveBtn('btn-trend'); currentChart = 'trend';
+  drawTrendChart();
+  const last = industrialData[industrialData.length - 1];
+  const first = industrialData[0];
+  const co2Var = ((last.co2 - first.co2) / first.co2 * 100).toFixed(1);
+  const effVar = ((last.efficiency - first.efficiency) / first.efficiency * 100).toFixed(1);
+  setResults(`
+    <div class="result-block">
+      <span class="result-tag">Variação CO₂</span>
+      <p class="${co2Var > 0 ? 'result-alert' : 'result-good'}">${co2Var > 0 ? '+' : ''}${co2Var}% no período · URS</p>
+    </div>
+    <div class="result-block">
+      <span class="result-tag">Variação Eficiência</span>
+      <p class="${effVar < 0 ? 'result-alert' : 'result-good'}">${effVar}%</p>
+    </div>
+    <div class="result-block">
+      <span class="result-tag">Alerta Preditivo TC-01</span>
+      <p class="result-alert">Manutenção preventiva recomendada em 14 dias.</p>
+    </div>`);
+  return typeAIMessage(`Tendência: CO₂ variou ${co2Var}%. Degradação mecânica correlacionada. Manutenção preditiva recomendada.`);
+}
+
+function runFullReport() {
+  hideIdle(); setChartTitle('Relatório de Integridade · Overview Industrial O&G');
+  setActiveBtn('btn-scatter'); drawScatterChart();
+  const d = generateDiagnosis();
+  const sim = simulateNetZero();
+  const co2Red = ((sim.base[26] - sim.actual[26]) / sim.base[26] * 100).toFixed(1);
+  setResults(`
+    <div class="result-block">
+      <span class="result-tag">Resumo Executivo</span>
+      <p class="result-value result-${d.cls.includes('good') ? 'good' : d.cls.includes('warn') ? 'alert' : 'crit'}">Sistema: ${d.status}</p>
+    </div>
+    <div class="result-block">
+      <span class="result-tag">KPIs Operacionais</span>
+      <p>Vibração TC-01: ${d.avgVib} mm/s · CO₂ URS: ${d.avgCO2} ton/h · Eficiência: ${d.avgEff}%</p>
+    </div>
+    <div class="result-block">
+      <span class="result-tag">Projeção Net Zero</span>
+      <p class="result-good">Potencial: ${co2Red}% de redução até 2050 com H₂ verde</p>
+    </div>
+    <div class="result-block">
+      <span class="result-tag">Ações Prioritárias</span>
+      ${d.recommendations.map((r, i) => `<p class="result-${r.type}">${i + 1}. ${r.text}</p>`).join('')}
+    </div>`);
+  return typeAIMessage(`Relatório: ${d.status}. CO₂ URS: ${d.avgCO2} ton/h. Eficiência: ${d.avgEff}%. Descarbonização potencial: ${co2Red}% com H₂ verde.`);
+}
+
+function runPressureTemp() {
+  hideIdle(); setChartTitle('Análise Térmica · Temperatura & Pressão · BT-02');
+  setActiveBtn('btn-trend'); currentChart = 'pressureTemp';
+  drawPressureTempChart();
+  const avgP = (industrialData.reduce((s, p) => s + p.pressure, 0) / industrialData.length).toFixed(2);
+  const avgT = (industrialData.reduce((s, p) => s + p.temp, 0) / industrialData.length).toFixed(1);
+  const maxT = Math.max(...industrialData.map(p => p.temp)).toFixed(1);
+  setResults(`
+    <div class="result-block">
+      <span class="result-tag">Pressão · BT-02</span>
+      <p class="result-value">${avgP} bar (média)</p>
+    </div>
+    <div class="result-block">
+      <span class="result-tag">Temperatura Média · Selo</span>
+      <p class="${parseFloat(avgT) > 210 ? 'result-alert' : 'result-value'}">${avgT} °C</p>
+    </div>
+    <div class="result-block">
+      <span class="result-tag">Pico Térmico</span>
+      <p class="${parseFloat(maxT) > 220 ? 'result-crit' : 'result-alert'}">${maxT} °C (máx. registrado)</p>
+    </div>
+    <div class="result-block">
+      <span class="result-tag">Diagnóstico Térmico</span>
+      <p>${parseFloat(avgT) > 210 ? 'Temperatura elevada · Verificar sistema de resfriamento do selo mecânico. Flush Plan 32.' : 'Temperatura dentro do envelope operacional.'}</p>
+    </div>`);
+  return typeAIMessage(`Pressão BT-02: ${avgP} bar. Temperatura média: ${avgT}°C. Pico: ${maxT}°C. ${parseFloat(avgT) > 210 ? 'Alerta térmico no selo mecânico.' : 'Parâmetros normais.'}`);
+}
+
+function runEfficiency() {
+  hideIdle(); setChartTitle('Eficiência Energética · Subsistemas · Plataforma P-52');
+  setActiveBtn('btn-trend'); currentChart = 'efficiency';
+  drawEfficiencyChart();
+  const avg = (industrialData.reduce((s, p) => s + p.efficiency, 0) / industrialData.length).toFixed(1);
+  const loss = (100 - parseFloat(avg)).toFixed(1);
+  const min  = Math.min(...industrialData.map(p => p.efficiency)).toFixed(1);
+  setResults(`
+    <div class="result-block">
+      <span class="result-tag">Eficiência Média · URS</span>
+      <p class="result-value ${parseFloat(avg) < 80 ? 'result-alert' : 'result-good'}">${avg}%</p>
+    </div>
+    <div class="result-block">
+      <span class="result-tag">Pior Ponto Registrado</span>
+      <p class="result-alert">${min}% (mínimo)</p>
+    </div>
+    <div class="result-block">
+      <span class="result-tag">Perda Energética</span>
+      <p class="result-alert">${loss}% desperdiçado em média</p>
+    </div>
+    <div class="result-block">
+      <span class="result-tag">Oportunidade</span>
+      <p>Recuperação de calor residual pode aumentar eficiência em 8–12%.</p>
+    </div>`);
+  return typeAIMessage(`Eficiência URS: ${avg}% (mín ${min}%). Perda de ${loss}%. Recomendo upgrade do sistema de recuperação de vapor.`);
+}
+
+function runUnknown() {
+  return typeAIMessage('Comando não reconhecido. Tente: "Diagnóstico TC-01", "Correlação CO₂", "Net Zero 2050" ou "Relatório completo".');
+}
+
+// ── HELPERS ──────────────────────────────────
+
+function setResults(html) {
+  document.getElementById('results-content').innerHTML = html;
+}
+
+function setActiveBtn(id) {
+  document.querySelectorAll('.ctrl-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById(id);
+  if (btn) btn.classList.add('active');
+}
+
+function addMessage(text, type) {
+  const container = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'msg msg-' + type;
+  if (type === 'ai') {
+    div.innerHTML = '<span class="ai-label">OGASAI · Engine</span>' + text;
+  } else {
+    div.textContent = text;
+  }
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+  return div;
+}
+
+function typeAIMessage(text) {
+  return new Promise(resolve => {
+    const container = document.getElementById('messages');
+    const typing = document.createElement('div');
+    typing.className = 'msg msg-ai msg-typing';
+    typing.innerHTML = '<span class="ai-label">OGASAI · Engine</span><span></span><span></span><span></span>';
+    container.appendChild(typing);
+    container.scrollTop = container.scrollHeight;
+
+    setTimeout(() => {
+      typing.remove();
+      const div = document.createElement('div');
+      div.className = 'msg msg-ai';
+      div.innerHTML = '<span class="ai-label">OGASAI · Engine</span><span class="ai-text"></span>';
+      container.appendChild(div);
+      const span = div.querySelector('.ai-text');
+      let i = 0;
+      const interval = setInterval(() => {
+        span.textContent += text[i++];
+        container.scrollTop = container.scrollHeight;
+        if (i >= text.length) { clearInterval(interval); resolve(); }
+      }, 14);
+    }, 600 + Math.random() * 300);
+  });
+}
+
+async function handleInput(rawText) {
+  const text = rawText.trim();
+  if (!text || isProcessing) return;
+  isProcessing = true;
+  addMessage(text, 'user');
+
+  const kw = detectDiagnosticKeyword(text);
+  if (kw) {
+    addDiagnosticResponse(kw);
+    const intent = parseUserIntent(text);
+    if (intent.type !== 'unknown') {
+      industrialData = generateIndustrialData();
+      updateMetrics();
+      await executeIntent(intent);
+    }
+    setTimeout(() => { isProcessing = false; }, 2000);
+    return;
+  }
+
+  const intent = parseUserIntent(text);
+  await executeIntent(intent);
+  isProcessing = false;
+}
+
+function showChart(type) {
+  if (!industrialData.length) {
+    industrialData = generateIndustrialData();
+    updateMetrics();
+  }
+  hideIdle();
+  currentChart = type;
+  switch (type) {
+    case 'scatter':      drawScatterChart();      setChartTitle('Correlação: Vibração TC-01 × Emissão CO₂ · Limites ISO');     setActiveBtn('btn-scatter'); break;
+    case 'trend':        drawTrendChart();         setChartTitle('Tendência Temporal · CO₂ · Vibração · Eficiência');             setActiveBtn('btn-trend');   break;
+    case 'netzero':      drawNetZeroChart();       setChartTitle('Simulação Net Zero 2050 · H₂ Verde · Paris · BAU');             setActiveBtn('btn-netzero'); break;
+    case 'diagnosis':    drawDiagnosisChart();     setChartTitle('Diagnóstico Preditivo · Saúde dos Ativos · P-52');              setActiveBtn('btn-scatter'); break;
+    case 'pressureTemp': drawPressureTempChart();  setChartTitle('Análise Térmica · Temperatura & Pressão · BT-02');              setActiveBtn('btn-trend');   break;
+    case 'efficiency':   drawEfficiencyChart();    setChartTitle('Eficiência Energética · Subsistemas · Plataforma P-52');        setActiveBtn('btn-trend');   break;
+  }
+}
+
+function loadPowerBI() {
+  const url = document.getElementById('pbi-url').value.trim();
+  if (!url) return;
+  document.getElementById('powerbi-iframe').src = url;
+  const overlay = document.getElementById('powerbi-overlay');
+  overlay.style.opacity = '0';
+  overlay.style.pointerEvents = 'none';
+}
+
+function showToast(msg, color = '#FFCC00') {
+  const t = document.getElementById('alert-toast');
+  t.textContent = msg;
+  t.style.borderLeftColor = color;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function updateClock() {
+  const el = document.getElementById('status-time');
+  if (el) el.textContent = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+
+function toggleGroup(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+// ── CANVAS TOOLTIP SYSTEM ────────────────────
+let tooltipData = { type: null, points: [], pad: {}, ranges: {} };
+
+function showTooltipEl(x, y, title, xLabel, xVal, yLabel, yVal) {
+  const el = document.getElementById('canvas-tooltip');
+  el.style.left = x + 'px';
+  el.style.top  = y + 'px';
+  document.getElementById('tt-title').textContent  = title;
+  document.getElementById('tt-x-label').textContent = xLabel + ':';
+  document.getElementById('tt-x-val').textContent   = xVal;
+  document.getElementById('tt-y-label').textContent = yLabel + ':';
+  document.getElementById('tt-y-val').textContent   = yVal;
+  el.classList.add('visible');
+}
+
+function hideTooltipEl() {
+  document.getElementById('canvas-tooltip').classList.remove('visible');
+}
+
+function setupCanvasTooltip() {
+  const canvas = document.getElementById('main-canvas');
+
+  canvas.addEventListener('mousemove', e => {
+    if (!tooltipData.type) { hideTooltipEl(); return; }
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    const { type, points, pad, ranges } = tooltipData;
+    const W = canvas.style.width  ? parseFloat(canvas.style.width)  : rect.width;
+    const H = canvas.style.height ? parseFloat(canvas.style.height) : rect.height;
+
+    if (type === 'scatter') {
+      let best = null, bestDist = 30;
+      points.forEach(p => {
+        const px = mapX(p.vibration, ranges.vibMin, ranges.vibMax, pad.l, pad.r, W);
+        const py = mapY(p.co2,       ranges.co2Min, ranges.co2Max, pad.t, pad.b, H);
+        const d  = Math.hypot(mx - px, my - py);
+        if (d < bestDist) { best = p; bestDist = d; }
+      });
+      if (best) {
+        showTooltipEl(e.clientX + 14, e.clientY, 'CORRELAÇÃO',
+          'Vibr. TC-01', best.vibration.toFixed(2) + ' mm/s',
+          'CO₂ URS', best.co2.toFixed(2) + ' ton/h');
+      } else { hideTooltipEl(); }
+
+    } else if (type === 'trend') {
+      const idx = Math.round((mx - pad.l) / (W - pad.l - pad.r) * (points.length - 1));
+      const p = points[Math.max(0, Math.min(idx, points.length - 1))];
+      if (mx >= pad.l && mx <= W - pad.r) {
+        showTooltipEl(e.clientX + 14, e.clientY, 'TENDÊNCIA · t' + p.t,
+          'CO₂', p.co2.toFixed(2) + ' ton/h',
+          'Efic.', p.efficiency.toFixed(1) + '%');
+      } else { hideTooltipEl(); }
+
+    } else if (type === 'netzero') {
+      const years = points.base.length;
+      const idx = Math.round((mx - pad.l) / (W - pad.l - pad.r) * (years - 1));
+      const i = Math.max(0, Math.min(idx, years - 1));
+      if (mx >= pad.l && mx <= W - pad.r) {
+        showTooltipEl(e.clientX + 14, e.clientY, 'NET ZERO · ' + (2024 + i),
+          'BAU', points.base[i].toFixed(1),
+          'H₂ Verde', points.actual[i].toFixed(1));
+      } else { hideTooltipEl(); }
+
+    } else if (type === 'diagnosis') {
+      const n = points.length;
+      const gap = (W - pad.l - pad.r) / n;
+      const idx = Math.floor((mx - pad.l) / gap);
+      const p = points[Math.max(0, Math.min(idx, n - 1))];
+      if (mx >= pad.l && mx <= W - pad.r && p) {
+        showTooltipEl(e.clientX + 14, e.clientY, p.name.replace('\n', ' '),
+          'Score', Math.round(p.score) + '%',
+          'Valor', p.detail);
+      } else { hideTooltipEl(); }
+
+    } else if (type === 'pressureTemp') {
+      const idx = Math.round((mx - pad.l) / (W - pad.l - pad.r) * (points.length - 1));
+      const p = points[Math.max(0, Math.min(idx, points.length - 1))];
+      if (mx >= pad.l && mx <= W - pad.r) {
+        showTooltipEl(e.clientX + 14, e.clientY, 'BT-02 · t' + p.t,
+          'Temperatura', p.temp.toFixed(1) + ' °C',
+          'Pressão', p.pressure.toFixed(2) + ' bar');
+      } else { hideTooltipEl(); }
+
+    } else if (type === 'efficiency') {
+      const n = points.length;
+      const rowH = (H - pad.t - pad.b) / n;
+      const idx = Math.floor((my - pad.t) / rowH);
+      const p = points[Math.max(0, Math.min(idx, n - 1))];
+      if (my >= pad.t && my <= H - pad.b && p) {
+        showTooltipEl(e.clientX + 14, e.clientY, 'EFICIÊNCIA',
+          'Subsistema', p.name.replace(' · ', '\n').split('\n')[0],
+          'Eficiência', p.val.toFixed(1) + '%');
+      } else { hideTooltipEl(); }
+    }
+  });
+
+  canvas.addEventListener('mouseleave', hideTooltipEl);
+}
+
+// ── MONTHLY COMPARATIVE ──────────────────────
+function generateMonthlyData() {
+  const months = ['Dez/24','Jan/25','Fev/25','Mar/25','Abr/25'];
+  const seed = () => (Math.random() - 0.5);
+  return months.map((m, i) => {
+    const isCurrent = i === months.length - 1;
+    return {
+      month: m,
+      current: isCurrent,
+      efficiency: parseFloat((89.2 - i * 0.9 + seed() * 1.2).toFixed(1)),
+      co2:        parseFloat((2.45 + i * 0.18 + seed() * 0.15).toFixed(2)),
+      vibration:  parseFloat((3.8  + i * 0.22 + seed() * 0.3).toFixed(2)),
+      pressure:   parseFloat((8.6  - i * 0.05 + seed() * 0.2).toFixed(2)),
+    };
+  });
+}
+
+function renderMonthlyTable(data) {
+  const metrics = [
+    { key: 'efficiency', label: 'Eficiência (%)',   upBad: false, unit: '%' },
+    { key: 'co2',        label: 'CO₂ (ton/h)',      upBad: true,  unit: ' t/h' },
+    { key: 'vibration',  label: 'Vibração (mm/s)',  upBad: true,  unit: ' mm/s' },
+    { key: 'pressure',   label: 'Pressão (bar)',    upBad: false,  unit: ' bar' },
+  ];
+
+  let header = '<thead><tr><th>Indicador</th>';
+  data.forEach(d => header += `<th${d.current ? ' style="color:#7A5E00"' : ''}>${d.month}${d.current ? ' ★' : ''}</th>`);
+  header += '</tr></thead>';
+
+  let body = '<tbody>';
+  metrics.forEach(m => {
+    body += `<tr><td>${m.label}</td>`;
+    data.forEach((d, i) => {
+      const prev = i > 0 ? data[i-1][m.key] : null;
+      let cls = '';
+      let arrow = '';
+      if (prev !== null) {
+        if (d[m.key] > prev)  { cls = m.upBad ? 'td-up'   : 'td-down'; arrow = ' ▲'; }
+        if (d[m.key] < prev)  { cls = m.upBad ? 'td-down' : 'td-up';   arrow = ' ▼'; }
+      }
+      if (d.current) cls += ' td-cur';
+      body += `<td class="${cls.trim()}">${d[m.key]}${m.unit}${arrow}</td>`;
+    });
+    body += '</tr>';
+  });
+  body += '</tbody>';
+
+  document.getElementById('monthly-table-body').innerHTML = header + body;
+}
+
+function generateMonthlyInsight(data) {
+  const cur  = data[data.length - 1];
+  const prev = data[data.length - 2];
+  const effDelta = (cur.efficiency - prev.efficiency).toFixed(1);
+  const co2Delta = (cur.co2 - prev.co2).toFixed(2);
+  const vibDelta = (cur.vibration - prev.vibration).toFixed(2);
+
+  const effSign  = parseFloat(effDelta) >= 0 ? '+' : '';
+  const co2Sign  = parseFloat(co2Delta) >= 0 ? '+' : '';
+  const vibSign  = parseFloat(vibDelta) >= 0 ? '+' : '';
+
+  const effCause = parseFloat(effDelta) < -0.5
+    ? 'A queda na eficiência energética é consistente com desgaste progressivo nos turbocompressores TC-01 — recomenda-se inspeção do rotor e limpeza de dutos de recuperação de vapor (URS).'
+    : 'A eficiência operacional manteve-se estável. Otimizações recentes na Unidade de Recuperação de Vapor (URS) contribuíram para a estabilização do índice.';
+
+  const co2Cause = parseFloat(co2Delta) > 0.15
+    ? 'O incremento nas emissões de CO₂ correlaciona-se com o aumento de vibração e possível combustão incompleta na queima de gás associado. Verificar válvulas reguladoras do sistema de flare.'
+    : 'As emissões de CO₂ permaneceram dentro da meta operacional. A trajetória atual é compatível com o plano de descarbonização Net Zero 2050.';
+
+  const vibCause = parseFloat(vibDelta) > 0.2
+    ? 'A elevação da vibração no TC-01 indica início de desbalanceamento dinâmico ou folga excessiva no mancal dianteiro. Prioridade: manutenção preditiva em 7–14 dias para evitar falha em laço.'
+    : 'Vibração controlada dentro dos limites ISO 10816. Nenhuma intervenção imediata requerida.';
+
+  return `<strong>IA Insight · Análise Comparativa Mensal</strong>
+  <b>Eficiência (${effSign}${effDelta}%):</b> ${effCause}<br><br>
+  <b>Emissões CO₂ (${co2Sign}${co2Delta} ton/h):</b> ${co2Cause}<br><br>
+  <b>Vibração TC-01 (${vibSign}${vibDelta} mm/s):</b> ${vibCause}`;
+}
+
+function openMonthlyComparative() {
+  const data = generateMonthlyData();
+  renderMonthlyTable(data);
+  document.getElementById('monthly-insight-text').innerHTML = generateMonthlyInsight(data);
+  document.getElementById('monthly-modal').classList.add('visible');
+  document.querySelectorAll('.ctrl-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('btn-monthly').classList.add('active');
+  typeAIMessage(`Comparativo mensal carregado. Eficiência atual: ${data[data.length-1].efficiency}% · CO₂: ${data[data.length-1].co2} ton/h · Vibração TC-01: ${data[data.length-1].vibration} mm/s. Ver painel de análise.`);
+}
+
+function init() {
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // Mapeamento direto: data-action → função de análise correta
+  const ACTION_MAP = {
+    scatter:      () => { industrialData = generateIndustrialData(); updateMetrics(); runScatterChart(); },
+    trend:        () => { industrialData = generateIndustrialData(); updateMetrics(); runTrendChart(); },
+    netzero:      () => { industrialData = generateIndustrialData(); updateMetrics(); runNetZero(); },
+    diagnosis:    () => { industrialData = generateIndustrialData(); updateMetrics(); runDiagnosis(); },
+    pressure_temp:() => { industrialData = generateIndustrialData(); updateMetrics(); runPressureTemp(); },
+    efficiency:   () => { industrialData = generateIndustrialData(); updateMetrics(); runEfficiency(); },
+    report:       () => { industrialData = generateIndustrialData(); updateMetrics(); runFullReport(); },
+    monthly:      () => { openMonthlyComparative(); },
+  };
+
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const action = btn.dataset.action;
+      if (action && ACTION_MAP[action]) {
+        ACTION_MAP[action]();
+      }
+    });
+  });
+
+  setInterval(() => {
+    if (industrialData.length) {
+      const delta = (Math.random() - 0.5) * 0.08;
+      const el = document.getElementById('mv-vib');
+      const cur = parseFloat(el.textContent) || 0;
+      el.textContent = Math.max(0, cur + delta).toFixed(2);
+    }
+  }, 2500);
+
+  setupCanvasTooltip();
+
+  document.getElementById('monthly-close').addEventListener('click', () => {
+    document.getElementById('monthly-modal').classList.remove('visible');
+  });
+  document.getElementById('monthly-modal').addEventListener('click', e => {
+    if (e.target === document.getElementById('monthly-modal'))
+      document.getElementById('monthly-modal').classList.remove('visible');
+  });
+
+  // OS Modal close
+  document.getElementById('os-close').addEventListener('click', () => {
+    document.getElementById('os-modal').classList.remove('visible');
+  });
+  document.getElementById('os-cancel').addEventListener('click', () => {
+    document.getElementById('os-modal').classList.remove('visible');
+  });
+  document.getElementById('os-modal').addEventListener('click', e => {
+    if (e.target === document.getElementById('os-modal'))
+      document.getElementById('os-modal').classList.remove('visible');
+  });
+
+  // ESG Simulator
+  initESGSimulator();
+
+  document.getElementById('send-btn').addEventListener('click', () => {
+    const input = document.getElementById('user-input');
+    handleInput(input.value);
+    input.value = '';
+  });
+
+  document.getElementById('user-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      const input = document.getElementById('user-input');
+      handleInput(input.value);
+      input.value = '';
+    }
+  });
+
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (industrialData.length) {
+        switch(currentChart) {
+          case 'scatter':      drawScatterChart(); break;
+          case 'trend':        drawTrendChart(); break;
+          case 'netzero':      drawNetZeroChart(); break;
+          case 'diagnosis':    drawDiagnosisChart(); break;
+          case 'pressureTemp': drawPressureTempChart(); break;
+          case 'efficiency':   drawEfficiencyChart(); break;
+        }
+      }
+    }, 150);
+  });
+
+  (async () => {
+    industrialData = generateIndustrialData();
+    updateMetrics();
+    await typeAIMessage('OGASAI-Engine v3.0 inicializado. Copiloto Industrial O&G · Net Zero 2050. Tema Brasil Industrial ativo. 60 amostras carregadas.');
+    await new Promise(r => setTimeout(r, 300));
+    await typeAIMessage('Turbocompressores TC-01, Bombas de Transferência BT-02 e Unidades de Recuperação de Vapor monitorados. Use o menu lateral ou linguagem natural.');
+    setTimeout(() => showToast('Sistema pronto para análise'), 500);
+  })();
+}
+
+// ═══════════════════════════════════════════════
+//  MÓDULO 1 · DIAGNÓSTICO INTELIGENTE NO CHAT
+// ═══════════════════════════════════════════════
+
+const DIAGNOSTIC_DB = {
+  compressor: {
+    asset: 'Compressor C-04',
+    location: 'Plataforma P-52 · Deck C',
+    type: 'Manutenção Preditiva',
+    priority: 'ALTA',
+    stamp: 'URGENTE',
+    fault: 'Vibração elevada no rotor (TC-01) · 5.8 mm/s — acima do limite ISO 10816 (4.5 mm/s)',
+    parts: ['Rolamento SKF 6312-2RS (x2)', 'Selo mecânico API 682 Plan 11', 'Filtro coalescente FE-14', 'Anel de desgaste em Teflon (x4)', 'Junta de expansão DN 150'],
+    action: 'Substituir rolamentos dianteiro e traseiro do rotor TC-01. Inspecionar e recalibrar selos mecânicos conforme API 682. Realizar balanceamento dinâmico in-situ após substituição. Verificar alinhamento com bomba BT-02 usando laser. Janela de intervenção recomendada: próximos 7 dias para evitar falha em laço e parada não programada.',
+    message: 'Compressor C-04 detectado com vibração crítica de 5.8 mm/s. Risco de falha em laço em 7–14 dias. Gere a OS para iniciar manutenção preditiva.'
+  },
+  bomba: {
+    asset: 'Bomba de Transferência BT-02',
+    location: 'Plataforma P-52 · Sala de Bombas B',
+    type: 'Manutenção Corretiva',
+    priority: 'MÉDIA-ALTA',
+    stamp: 'ATENÇÃO',
+    fault: 'Temperatura do selo mecânico acima de 220 °C · Pressão diferencial reduzida em 12%',
+    parts: ['Selo mecânico Flowserve Serie 2800 (x1)', 'Gaxeta espiral Klingersil C-4400', 'Rolamento de rolos SKF 22320 (x2)', 'Acoplamento flexível tipo grade', 'Óleo lubrificante ISO VG 68 (5L)'],
+    action: 'Substituição emergencial do selo mecânico da BT-02. Temperatura de 220°C indica início de falha no sistema de resfriamento do selo. Verificar linha de flush Plan 32. Realizar inspeção de cavitação no impelidor. Após reparo, testar curva de desempenho (Q×H) e comparar com curva de projeto.',
+    message: 'Bomba BT-02 com temperatura crítica no selo mecânico (220 °C). Risco de contaminação do processo. Intervenção recomendada em até 48h.'
+  },
+  vibracao: {
+    asset: 'Turbocompressor TC-01',
+    location: 'Plataforma P-52 · Módulo de Compressão',
+    type: 'Manutenção Preditiva · Análise de Vibração',
+    priority: 'CRÍTICA',
+    stamp: 'CRÍTICO',
+    fault: 'Espectro FFT revela frequência dominante em 1X (desbalanceamento) e 0.45X (possível instabilidade de mancal)',
+    parts: ['Rolamento principal SKF Explorer 7314 (x2)', 'Mancal Babbitt revestido 150mm', 'Kit de balanceamento Schenck (pesos de correção)', 'Sensor piezoelétrico PCB 603C01 (substituto)', 'Graxa Mobilgrease XHP 222 (5kg)'],
+    action: 'Análise espectral FFT indica desbalanceamento dinâmico no rotor TC-01 (1X = 48Hz) com início de instabilidade oil-whirl no mancal (0.45X). Procedimento: 1) Parar equipamento de forma controlada. 2) Inspecionar e trocar mancais. 3) Enviar rotor para balanceamento externo G1.0. 4) Substituir sensor de vibração com leitura saturada. Prazo máximo: 72 horas.',
+    message: 'Vibração TC-01 com espectro FFT anômalo: desbalanceamento dinâmico + instabilidade de mancal detectados. Intervenção crítica em 72h.'
+  }
+};
+
+function detectDiagnosticKeyword(text) {
+  const t = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  if (/compressor|c-04|c04/.test(t))    return 'compressor';
+  if (/bomba|bt-02|bt02|transferencia/.test(t)) return 'bomba';
+  if (/vibrac|vibrac|vibracao|fft|espectro/.test(t)) return 'vibracao';
+  return null;
+}
+
+function addDiagnosticResponse(keyword) {
+  const db  = DIAGNOSTIC_DB[keyword];
+  const container = document.getElementById('messages');
+
+  // Processing indicator
+  const proc = document.createElement('div');
+  proc.className = 'msg msg-ai';
+  proc.innerHTML = `<span class="ai-label">OGASAI · Engine</span>
+    <div class="msg-processing">
+      <div class="processing-dot"></div>
+      Processando Telemetria · Analisando ${db.asset}...
+    </div>`;
+  container.appendChild(proc);
+  container.scrollTop = container.scrollHeight;
+
+  setTimeout(() => {
+    proc.remove();
+    const div = document.createElement('div');
+    div.className = 'msg msg-ai';
+    div.innerHTML = `<span class="ai-label">OGASAI · Engine</span>
+      <span class="ai-text">${db.message}</span>
+      <button class="btn-os-draft" onclick="openOSModal('${keyword}')">
+        ⚙ Gerar Rascunho de OS
+      </button>`;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+    showToast('Falha detectada · ' + db.asset, 'var(--crit)');
+  }, 1500);
+}
+
+// handleInput unificado — ver definição acima (linha ~2683)
+
+// ═══════════════════════════════════════════════
+//  MÓDULO 2 · ENGINE DE SIMULAÇÃO FINANCEIRA ESG
+// ═══════════════════════════════════════════════
+
+function initESGSimulator() {
+  const sliderEl   = document.getElementById('sim-efficiency');
+  const effValEl   = document.getElementById('sim-eff-val');
+  const rateEl     = document.getElementById('sim-carbon-rate');
+  const taxEl      = document.getElementById('sim-carbon-tax');
+  const lossEl     = document.getElementById('sim-waste-loss');
+
+  // Constants (monthly baseline for a typical O&G unit)
+  const BASELINE_CO2_MONTH   = 1800;  // tCO2e/month at 100% efficiency
+  const BASELINE_REVENUE     = 4500000; // USD/month full production
+  const PROD_LOSS_PER_EFF    = 42000; // USD lost per % of inefficiency
+
+  function calcSimulator() {
+    const eff      = parseFloat(sliderEl.value);
+    const rate     = parseFloat(rateEl.value) || 0;
+    const ineff    = 100 - eff;
+    const excessCO2 = BASELINE_CO2_MONTH * (ineff / 100);
+    const carbonTax = excessCO2 * rate;
+    const wasteLoss = ineff * PROD_LOSS_PER_EFF;
+
+    effValEl.textContent = eff.toFixed(1);
+    taxEl.textContent    = '$' + carbonTax.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    lossEl.textContent   = '$' + wasteLoss.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  }
+
+  sliderEl.addEventListener('input', calcSimulator);
+  rateEl.addEventListener('input', calcSimulator);
+  calcSimulator(); // initial render
+}
+
+// ═══════════════════════════════════════════════
+//  MÓDULO 3 · GERADOR DE ORDEM DE SERVIÇO (OS)
+// ═══════════════════════════════════════════════
+
+function openOSModal(keyword) {
+  const db = DIAGNOSTIC_DB[keyword] || DIAGNOSTIC_DB['compressor'];
+  const osId = 'OS-' + Math.floor(Math.random() * 90000 + 10000) + '-OG';
+  const now  = new Date().toLocaleString('pt-BR', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  });
+
+  document.getElementById('os-id').textContent       = osId;
+  document.getElementById('os-datetime').textContent  = now;
+  document.getElementById('os-asset').textContent     = db.asset;
+  document.getElementById('os-location').textContent  = db.location;
+  document.getElementById('os-type').textContent      = db.type;
+  document.getElementById('os-priority').textContent  = db.priority;
+  document.getElementById('os-fault').textContent     = db.fault;
+  document.getElementById('os-action').textContent    = db.action;
+  document.getElementById('os-stamp').textContent     = db.stamp;
+
+  const partsList = document.getElementById('os-parts');
+  partsList.innerHTML = db.parts.map(p => `<li>${p}</li>`).join('');
+
+  // Stamp color by priority
+  const stamp = document.getElementById('os-stamp');
+  stamp.style.borderColor = db.priority === 'CRÍTICA' ? 'var(--crit)' : 'var(--warn)';
+  stamp.style.color       = db.priority === 'CRÍTICA' ? 'var(--crit)' : 'var(--warn)';
+
+  document.getElementById('os-modal').classList.add('visible');
+}
+
+document.addEventListener('DOMContentLoaded', init);
+
+// ── HELP PANEL ──────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const helpBtn   = document.getElementById('help-btn');
+  const helpPanel = document.getElementById('help-panel');
+  if (helpBtn && helpPanel) {
+    helpBtn.addEventListener('click', () => {
+      helpPanel.classList.toggle('open');
+      helpBtn.textContent = helpPanel.classList.contains('open') ? '✕' : '?';
+    });
+  }
+});
+
+function insertCmd(text) {
+  const input = document.getElementById('user-input');
+  if (!input) return;
+  input.value = text;
+  input.focus();
+  // close help panel
+  document.getElementById('help-panel').classList.remove('open');
+  document.getElementById('help-btn').textContent = '?';
+}
+
+// ═══════════════════════════════════════════════
+//  MÓDULO 4 · RELATÓRIO DE ORDENS DE SERVIÇO
+// ═══════════════════════════════════════════════
+
+const OS_REPORT_DATA = [
+  {
+    id: 'OS-47812-OG', data: '08/04/2025 · 06:32', ativo: 'Turbocompressor TC-01',
+    local: 'Plataforma P-52 · Módulo de Compressão',
+    tipo: 'Manutenção Preditiva · Vibração',
+    prioridade: 'CRÍTICA', status: 'ABERTA',
+    responsavel: 'Eng. R. Ferreira',
+    prazo: '15/04/2025', vencida: true,
+    falha: 'Vibração crítica 5.8 mm/s — acima do limite ISO 10816 (4.5 mm/s). FFT com pico em 1X e 0.45X.',
+    acao: 'Substituir rolamentos dianteiro e traseiro do rotor TC-01. Inspecionar selos mecânicos API 682. Realizar balanceamento dinâmico in-situ. Verificar alinhamento com bomba BT-02 por laser.',
+    pecas: ['Rolamento SKF 6312-2RS (x2)', 'Selo mecânico API 682 Plan 11', 'Filtro coalescente FE-14', 'Anel de desgaste em Teflon (x4)', 'Junta de expansão DN 150']
+  },
+  {
+    id: 'OS-47765-OG', data: '05/04/2025 · 14:17', ativo: 'Bomba de Transferência BT-02',
+    local: 'Plataforma P-52 · Sala de Bombas B',
+    tipo: 'Manutenção Corretiva',
+    prioridade: 'ALTA', status: 'EM ANDAMENTO',
+    responsavel: 'Téc. M. Santos',
+    prazo: '12/04/2025', vencida: true,
+    falha: 'Temperatura do selo mecânico acima de 220 °C. Pressão diferencial reduzida em 12%.',
+    acao: 'Substituição emergencial do selo mecânico BT-02. Verificar linha de flush Plan 32. Inspecionar cavitação no impelidor. Testar curva Q×H após reparo.',
+    pecas: ['Selo mecânico Flowserve Serie 2800 (x1)', 'Gaxeta espiral Klingersil C-4400', 'Rolamento de rolos SKF 22320 (x2)', 'Acoplamento flexível tipo grade', 'Óleo lubrificante ISO VG 68 (5L)']
+  },
+  {
+    id: 'OS-47690-OG', data: '01/04/2025 · 09:05', ativo: 'Unidade de Recup. de Vapor URS-03',
+    local: 'Plataforma P-52 · Deck B · Módulo URS',
+    tipo: 'Inspeção Periódica',
+    prioridade: 'MÉDIA', status: 'CONCLUÍDA',
+    responsavel: 'Eng. C. Alves',
+    prazo: '07/04/2025', vencida: false,
+    falha: 'Inspeção semestral programada. Eficiência de recuperação caiu de 91% para 84%.',
+    acao: 'Limpeza dos trocadores de calor. Substituição do filtro de condensado. Calibração dos sensores de pressão e temperatura. Relatório de ensaio emitido.',
+    pecas: ['Filtro de condensado FY-08 (x2)', 'Elemento filtrante coalescente (x3)', 'Kit de vedação para válvula de controle VC-12', 'Sonda de temperatura PT100 (x1)']
+  },
+  {
+    id: 'OS-47641-OG', data: '28/03/2025 · 11:40', ativo: 'Compressor C-04',
+    local: 'Plataforma P-52 · Deck C',
+    tipo: 'Manutenção Preventiva',
+    prioridade: 'MÉDIA', status: 'CONCLUÍDA',
+    responsavel: 'Téc. P. Lima',
+    prazo: '04/04/2025', vencida: false,
+    falha: 'PM semestral programada. Troca de lubrificante e inspeção de válvulas.',
+    acao: 'Troca de lubrificante sintético. Inspeção e limpeza das válvulas de sucção e descarga. Verificação de folgas no rotor. Sistema aprovado para operação.',
+    pecas: ['Óleo sintético Shell Corena S4 P100 (10L)', 'Válvula de sucção C-04 (x2)', 'Filtro de ar FE-02 (x1)', 'Junta plana NBR DN80 (x4)']
+  },
+  {
+    id: 'OS-47589-OG', data: '24/03/2025 · 08:22', ativo: 'Sistema de Medição de Gás SMG-01',
+    local: 'Plataforma P-52 · Sala de Controle',
+    tipo: 'Calibração · Instrumento',
+    prioridade: 'BAIXA', status: 'CONCLUÍDA',
+    responsavel: 'Instr. A. Costa',
+    prazo: '31/03/2025', vencida: false,
+    falha: 'Desvio de ±1.2% detectado no medidor ultrassônico SMG-01 na última verificação metrológica.',
+    acao: 'Calibração do medidor ultrassônico conforme ABNT NBR ISO 17089. Ajuste zero/span realizado. Certificado de calibração emitido. Válido por 12 meses.',
+    pecas: ['Padrão de calibração (rastreável INMETRO)', 'Fluido de referência (N₂ 5.0)', 'Módulo de comunicação HART (substituto)']
+  },
+  {
+    id: 'OS-47820-OG', data: '09/04/2025 · 16:55', ativo: 'Turbocompressor TC-01',
+    local: 'Plataforma P-52 · Módulo de Compressão',
+    tipo: 'Análise Espectral · FFT',
+    prioridade: 'CRÍTICA', status: 'PENDENTE',
+    responsavel: '— Aguardando Aprovação',
+    prazo: '16/04/2025', vencida: false,
+    falha: 'Espectro FFT revela frequência dominante 1X (desbalanceamento) e 0.45X (instabilidade oil-whirl no mancal).',
+    acao: 'Parada controlada do equipamento. Inspeção e troca dos mancais. Envio de rotor para balanceamento externo G1.0. Substituição do sensor de vibração com leitura saturada. Prazo máximo: 72h.',
+    pecas: ['Rolamento principal SKF Explorer 7314 (x2)', 'Mancal Babbitt revestido 150mm', 'Kit balanceamento Schenck (pesos de correção)', 'Sensor piezoelétrico PCB 603C01', 'Graxa Mobilgrease XHP 222 (5kg)']
+  },
+  {
+    id: 'OS-47744-OG', data: '03/04/2025 · 10:08', ativo: 'Bomba de Transferência BT-05',
+    local: 'Plataforma P-52 · Sala de Bombas A',
+    tipo: 'Manutenção Preditiva',
+    prioridade: 'ALTA', status: 'EM ANDAMENTO',
+    responsavel: 'Eng. R. Ferreira',
+    prazo: '14/04/2025', vencida: true,
+    falha: 'Análise de óleo revelou presença de partículas metálicas ≥ 20μm. ISO 4406 nível 18/16/13 — fora do limite 16/14/11.',
+    acao: 'Drenagem e substituição do óleo lubrificante. Lavagem do circuito com flush oil. Análise do filtro de retorno para identificação da fonte das partículas metálicas.',
+    pecas: ['Óleo hidráulico Mobil DTE 25 (20L)', 'Flush oil ISO VG 32 (10L)', 'Elemento filtrante Beta 200 (x2)', 'Coletor de amostra de óleo (x5)']
+  },
+  {
+    id: 'OS-47510-OG', data: '18/03/2025 · 13:30', ativo: 'Válvula de Controle VC-17',
+    local: 'Plataforma P-52 · Linha de Processo LP-04',
+    tipo: 'Substituição · Atuador',
+    prioridade: 'MÉDIA', status: 'CONCLUÍDA',
+    responsavel: 'Téc. F. Nascimento',
+    prazo: '25/03/2025', vencida: false,
+    falha: 'Histerese excessiva no atuador pneumático (>3%). Resposta lenta ao sinal de controle — desvio de ±2°C na malha de temperatura.',
+    acao: 'Substituição do atuador pneumático Rotork. Calibração da posição 0-100%. Teste de stroke completo realizado. Sintonização do controlador PID ajustada.',
+    pecas: ['Atuador Rotork IQ3 (x1)', 'Kit de vedação atuador (posicionador)', 'Regulador de pressão 4-6 bar (x1)', 'Cabo de sinal 4-20mA (10m)']
+  }
+];
+
+let osReportFiltered = [...OS_REPORT_DATA];
+let osOpenRow = null;
+
+function openOSReport() {
+  renderOSKPIs();
+  renderOSTable(OS_REPORT_DATA);
+  document.getElementById('os-report-search').value = '';
+  document.querySelectorAll('.os-filter-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.os-filter-btn[data-filter="todos"]').classList.add('active');
+  osReportFiltered = [...OS_REPORT_DATA];
+  document.getElementById('os-report-modal').classList.add('visible');
+}
+
+function renderOSKPIs() {
+  const total     = OS_REPORT_DATA.length;
+  const abertas   = OS_REPORT_DATA.filter(o => o.status === 'ABERTA').length;
+  const andamento = OS_REPORT_DATA.filter(o => o.status === 'EM ANDAMENTO').length;
+  const conc      = OS_REPORT_DATA.filter(o => o.status === 'CONCLUÍDA').length;
+  document.getElementById('kpi-total').textContent      = total;
+  document.getElementById('kpi-abertas').textContent    = abertas;
+  document.getElementById('kpi-andamento').textContent  = andamento;
+  document.getElementById('kpi-concluidas').textContent = conc;
+}
+
+function statusBadgeClass(s) {
+  if (s === 'ABERTA')       return 'os-badge-aberta';
+  if (s === 'EM ANDAMENTO') return 'os-badge-andamento';
+  if (s === 'CONCLUÍDA')    return 'os-badge-concluida';
+  return 'os-badge-pendente';
+}
+
+function priBadgeClass(p) {
+  if (p === 'CRÍTICA') return 'os-pri-critica';
+  if (p === 'ALTA')    return 'os-pri-alta';
+  if (p === 'MÉDIA')   return 'os-pri-media';
+  return 'os-pri-baixa';
+}
+
+function renderOSTable(data) {
+  const tbody = document.getElementById('os-report-tbody');
+  tbody.innerHTML = '';
+  osOpenRow = null;
+
+  data.forEach((os, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${os.id}</td>
+      <td>${os.data}</td>
+      <td>${os.ativo}</td>
+      <td>${os.tipo}</td>
+      <td><span class="os-pri-badge ${priBadgeClass(os.prioridade)}">${os.prioridade}</span></td>
+      <td><span class="os-status-badge ${statusBadgeClass(os.status)}">${os.status}</span></td>
+      <td>${os.responsavel}</td>
+      <td style="color:${os.vencida ? 'var(--crit)' : 'var(--text-secondary)'}; font-weight:${os.vencida ? '600' : '400'}">${os.prazo}${os.vencida ? ' ⚠' : ''}</td>
+    `;
+
+    const detailRow = document.createElement('tr');
+    detailRow.className = 'os-row-detail';
+    detailRow.innerHTML = `
+      <td colspan="8">
+        <div class="os-detail-grid">
+          <div class="os-detail-item"><label>Localização</label><span>${os.local}</span></div>
+          <div class="os-detail-item"><label>Falha Detectada</label><span>${os.falha}</span></div>
+        </div>
+        <div class="os-detail-item" style="margin-bottom:6px">
+          <label>Ação Recomendada</label>
+          <div class="os-detail-action">${os.acao}</div>
+        </div>
+        <div class="os-detail-item">
+          <label>Peças / Materiais</label>
+          <ul class="os-detail-parts">${os.pecas.map(p => `<li>${p}</li>`).join('')}</ul>
+        </div>
+      </td>
+    `;
+
+    tr.addEventListener('click', () => {
+      if (osOpenRow && osOpenRow !== detailRow) {
+        osOpenRow.classList.remove('open');
+      }
+      detailRow.classList.toggle('open');
+      osOpenRow = detailRow.classList.contains('open') ? detailRow : null;
+    });
+
+    tbody.appendChild(tr);
+    tbody.appendChild(detailRow);
+  });
+
+  document.getElementById('os-report-count').textContent =
+    data.length + ' ordem' + (data.length !== 1 ? 's' : '') + ' exibida' + (data.length !== 1 ? 's' : '');
+}
+
+function filterOSReport(filter, btn) {
+  document.querySelectorAll('.os-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const search = document.getElementById('os-report-search').value.toLowerCase();
+  let result = filter === 'todos' ? [...OS_REPORT_DATA] : OS_REPORT_DATA.filter(o => o.status === filter);
+  if (search) result = result.filter(o =>
+    o.id.toLowerCase().includes(search) || o.ativo.toLowerCase().includes(search) || o.tipo.toLowerCase().includes(search)
+  );
+  osReportFiltered = result;
+  renderOSTable(result);
+}
+
+function searchOSReport(val) {
+  const active = document.querySelector('.os-filter-btn.active');
+  const filter = active ? active.dataset.filter : 'todos';
+  const v = val.toLowerCase();
+  let result = filter === 'todos' ? [...OS_REPORT_DATA] : OS_REPORT_DATA.filter(o => o.status === filter);
+  if (v) result = result.filter(o =>
+    o.id.toLowerCase().includes(v) || o.ativo.toLowerCase().includes(v) || o.tipo.toLowerCase().includes(v) || o.responsavel.toLowerCase().includes(v)
+  );
+  renderOSTable(result);
+}
+
+// Fechar o modal clicando fora
+document.getElementById('os-report-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('os-report-modal'))
+    document.getElementById('os-report-modal').classList.remove('visible');
+});
+document.getElementById('os-report-close').addEventListener('click', () => {
+  document.getElementById('os-report-modal').classList.remove('visible');
+});
+</script>
+</body>
+</html>
