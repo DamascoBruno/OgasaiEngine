@@ -1,7 +1,7 @@
 # 🌊 OGASAI — Offshore Gas & Asset Smart Analytics Interface
 
 <p align="center">
-  <img src="./assets/ogasai-logo.png" alt="OGASAI Logo" width="280px">
+<img width="68" height="64" alt="image" src="https://github.com/user-attachments/assets/ed0f5224-2ac8-4d36-aa9e-d2c0ed01ddbc" />
 </p>
 
 <p align="center">
@@ -27,7 +27,7 @@ O **OGASAI** é uma plataforma industrial de **telemetria preditiva** e **monito
 Veja abaixo o motor gráfico renderizando a telemetria ao vivo com comportamento estocástico realístico de sensores e zoneamento de severidade mecânica:
 
 <p align="center">
-  <img src="./assets/demonstracao-dashboard.gif" alt="Demonstração do Painel OGASAI em Tempo Real" width="90%">
+<img width="1873" height="926" alt="image" src="https://github.com/user-attachments/assets/b57018f1-3f4c-4f02-bceb-e85e5469b250" />
 </p>
 
 ---
